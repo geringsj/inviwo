@@ -2,7 +2,7 @@
  *
  * Inviwo - Interactive Visualization Workshop
  *
- * Copyright (c) 2015-2018 Inviwo Foundation
+ * Copyright (c) 2018 Inviwo Foundation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,49 +27,53 @@
  *
  *********************************************************************************/
 
-#ifndef IVW_PATHLINETRACER_H
-#define IVW_PATHLINETRACER_H
+#ifndef IVW_LISTPROPERTYWIDGETQT_H
+#define IVW_LISTPROPERTYWIDGETQT_H
 
-#include <modules/vectorfieldvisualization/vectorfieldvisualizationmoduledefine.h>
-#include <inviwo/core/common/inviwo.h>
-#include <modules/vectorfieldvisualization/datastructures/integralline.h>
-#include <modules/vectorfieldvisualization/integrallinetracer.h>
-#include <modules/vectorfieldvisualization/properties/pathlineproperties.h>
-#include <inviwo/core/util/volumesequencesampler.h>
+#include <modules/qtwidgets/qtwidgetsmoduledefine.h>
+#include <modules/qtwidgets/properties/compositepropertywidgetqt.h>
+
+#include <inviwo/core/properties/propertyownerobserver.h>
+
+class QMenu;
+class QToolButton;
 
 namespace inviwo {
 
+class ListProperty;
+class IvwPushButton;
+
 /**
- * \class PathLineTracer
- * \brief VERY_BRIEFLY_DESCRIBE_THE_CLASS
- * DESCRIBE_THE_CLASS
+ * \class ListPropertyWidgetQt
+ * \brief PropertyWidget for a ListProperty.
+ *
+ * This widget considers the UI flags of the property. If the property supports adding list
+ * elements, a tool button is added next to the property name (indicated by a plus). In case
+ * multiple prefab objects are registered with the property, a menu is shown. Alternatively, new
+ * entries can be added using the context menu. 
+ * List entries can be removed via a small "x" tool button next to them, if enabled.
  */
-class IVW_MODULE_VECTORFIELDVISUALIZATION_API PathLineTracer : public IntegralLineTracer {
+class IVW_MODULE_QTWIDGETS_API ListPropertyWidgetQt : public CompositePropertyWidgetQt {
 public:
-    PathLineTracer(std::shared_ptr<const Spatial4DSampler<3, double>> sampler,
-        const PathLineProperties &properties);
-    //PathLineTracer(std::shared_ptr<const std::vector<std::shared_ptr<Volume>>> volumeSequence, const PathLineProperties &properties);
-    virtual ~PathLineTracer();
+    ListPropertyWidgetQt(ListProperty* property);
+    virtual ~ListPropertyWidgetQt() = default;
 
-    IntegralLine traceFrom(const vec4 &p);
-    IntegralLine traceFrom(const dvec4 &p);
+    virtual void updateFromProperty() override;
 
-private:
-    void step(int steps, dvec4 curPos, IntegralLine &line, bool fwd);
+    virtual bool isChildRemovable() const override;
 
-    dvec3 sample(const dvec4 &pos);
+    virtual std::unique_ptr<QMenu> getContextMenu() override;
 
-    dvec3 euler(const dvec4 &curPos);
-    dvec3 rk4(const dvec4 &curPos, bool fwd);
-    
-    
-    dmat3 invBasis_;
-    
-    std::shared_ptr<const Spatial4DSampler<3, double>> sampler_;
+    // virtual void onDidAddProperty(Property* property, size_t index) override;
+    // virtual void onDidRemoveProperty(Property* property, size_t index) override;
 
+protected:
+    bool canAddElements() const;
 
+    ListProperty* listProperty_;
+    QToolButton* addItemButton_;
 };
 
-}  // namespace
+}  // namespace inviwo
 
-#endif  // IVW_PATHLINETRACER_H
+#endif  // IVW_LISTPROPERTYWIDGETQT_H

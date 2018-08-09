@@ -140,10 +140,14 @@ struct DispatchHelper<Result, B, E, std::tuple<Formats...>> {
  *  * __Predicate__ A type that is used to filter the list of types to consider in the
  *    dispatching. The `dispatching::filter` namespace have a few standard ones predefined.
  *
+ * # Example
+ * \snippet src/core/datastructures/buffer/bufferram.cpp Format Dispatching Example
+ *
  * @param callable This should be a struct with a generic call operator taking two template 
  * arguments the result type and DataFormat type. The callable will be called with the supplied 
  * arguments (`args`).
  * @param args Any arguments that should be passed on to the lambda.
+ *
  *
  * @throws dispatching::DispatchException in the case that the format of the buffer is not in
  * the list of formats after the filtering.
@@ -256,7 +260,7 @@ namespace util {
  * ```{.cpp}
  * VolumeRam* volumeram = ...; // of some glm vector type.
  * auto count = volumeram->dispatch<size_t, dispatching::filter::Vecs>([](auto vrprecision) {
- *     using VolumeType = util::PrecsionType<decltype(vr)>;
+ *     using VolumeType = util::PrecsionType<decltype(vrprecision)>;
  *     ....
  * ```
  * VolumeType will then be for example VolumeRamPrecision<vec3>
@@ -270,7 +274,7 @@ using PrecsionType = typename std::remove_pointer<typename std::remove_const<T>:
  * ```{.cpp}
  * VolumeRam* volumeram = ...; // of some glm vector type.
  * auto count = volumeram->dispatch<size_t, dispatching::filter::Vecs>([](auto vrprecision) {
- *     using ValueType = util::PrecsionValueType<decltype(vr)>;
+ *     using ValueType = util::PrecsionValueType<decltype(vrprecision)>;
  *     ....
  * ```
  * ValueType will then be for example vec3
