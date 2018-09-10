@@ -38,6 +38,7 @@
 #include <inviwo/core/properties/buttonproperty.h>
 #include <inviwo/core/ports/imageport.h>
 #include <modules/opengl/shader/shader.h>
+#include "../ext/Spout.h"
 
 namespace inviwo {
 
@@ -67,6 +68,11 @@ public:
 
 private:
     ImageInport inport_;
+    IntVec2Property dimensions_;
+    CompositeProperty inputSize_;
+
+    ProcessorWidgetMetaData* widgetMetaData_;
+	SpoutSender sender_;
 };
 
 }  // namespace inviwo
