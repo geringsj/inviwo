@@ -65,7 +65,6 @@ Spout::Spout()
     inport_.onChange([&]() {
         sender_.CreateSender("inviwo_sender", inport_.getData()->getDimensions()[0],
                              inport_.getData()->getDimensions()[1]);
-        LogInfo("Resolution: " << inport_.getData()->getDimensions());
     });
 }
 
@@ -73,7 +72,9 @@ Spout::~Spout() = default;
 
 void Spout::process() {
     if (inport_.hasData()) {
-        sender_.SendTexture(0, GL_TEXTURE_2D, inport_.getData()->getDimensions()[0],
+        sender_.SendTexture(
+            inport_.getData()->getColorLayer()->getRepresentation<LayerGL>()->getTexture()->getID(),
+            GL_TEXTURE_2D, inport_.getData()->getDimensions()[0],
                             inport_.getData()->getDimensions()[1]);
     }
 }

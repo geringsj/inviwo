@@ -39,6 +39,8 @@
 #include <inviwo/core/ports/imageport.h>
 #include <modules/opengl/shader/shader.h>
 #include "../ext/Spout.h"
+#include <inviwo/core/metadata/processorwidgetmetadata.h>
+#include <inviwo/core/properties/compositeproperty.h>
 
 namespace inviwo {
 
