@@ -46,8 +46,7 @@ const ProcessorInfo Spout::processorInfo_{
 };
 const ProcessorInfo Spout::getProcessorInfo() const { return processorInfo_; }
 
-Spout::Spout()
-    : Processor()
+Spout::Spout(): Processor()
     , inport_("inport")
     , dimensions_("dimensions", "Canvas Size", ivec2(256, 256), ivec2(128, 128), ivec2(4096, 4096),
                   ivec2(1, 1), InvalidationLevel::Valid)
@@ -61,8 +60,8 @@ Spout::Spout()
     dimensions_.setSerializationMode(PropertySerializationMode::None);
     dimensions_.onChange([this]() { widgetMetaData_->setDimensions(dimensions_.get()); });
     inputSize_.addProperty(dimensions_);
-
     inport_.onChange([&]() {
+        sender_.ReleaseSender();
         sender_.CreateSender("inviwo_sender", inport_.getData()->getDimensions()[0],
                              inport_.getData()->getDimensions()[1]);
     });
