@@ -68,14 +68,24 @@ public:
     virtual const ProcessorInfo getProcessorInfo() const override;
     static const ProcessorInfo processorInfo_;
 
-private:
+	void setCanvasSize(ivec2);
+    ivec2 getCanvasSize() const;
+
+    bool getUseCustomDimensions() const;
+    ivec2 getCustomDimensions() const;
+
+public:
     ImageInport inport_;
     IntVec2Property dimensions_;
     CompositeProperty inputSize_;
+    BoolProperty enableCustomInputDimensions_;
+    IntVec2Property customInputDimensions_;
 
-    ProcessorWidgetMetaData* widgetMetaData_;
+private:
+    void sizeChanged();
+
 	SpoutSender sender_;
-    vec2 dimensionOld_;
+    ivec2 previousImageSize_;
 };
 
 }  // namespace inviwo
