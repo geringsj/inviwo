@@ -67,7 +67,6 @@ Spout::Spout()
                                       inport_.getData()->getDimensions()[1])) {
                 dimensionOld_ = vec2(inport_.getData()->getDimensions()[0],
                                      inport_.getData()->getDimensions()[1]);
-				LogWarn(inport_.getData()->getDimensions());
 				sender_.ReleaseSender();
                 sender_.CreateSender("inviwo_sender", dimensionOld_.x, dimensionOld_.y);
 			}
