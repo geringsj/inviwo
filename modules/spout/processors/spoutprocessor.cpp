@@ -34,6 +34,7 @@
 #include <modules/opengl/image/imagegl.h>
 #include <modules/opengl/shader/shaderutils.h>
 #include <modules/opengl/inviwoopengl.h>
+#include <inviwo/core/network/networklock.h>
 
 namespace inviwo {
 
@@ -51,38 +52,79 @@ Spout::Spout()
     , inport_("inport")
     , dimensions_("dimensions", "Canvas Size", ivec2(256, 256), ivec2(128, 128), ivec2(4096, 4096),
                   ivec2(1, 1), InvalidationLevel::Valid)
+    , enableCustomInputDimensions_("enableCustomInputDimensions", "Separate Image Size", false,
+                                   InvalidationLevel::Valid)
+    , customInputDimensions_("customInputDimensions", "Image Size", ivec2(256, 256),
+                             ivec2(128, 128), ivec2(4096, 4096), ivec2(1, 1),
+                             InvalidationLevel::Valid)
     , inputSize_("inputSize", "Input Dimension Parameters")
-    , widgetMetaData_{createMetaData<ProcessorWidgetMetaData>(
-          ProcessorWidgetMetaData::CLASS_IDENTIFIER)}
-    , dimensionOld_(vec2(0, 0)) {
-    addPort(inport_);
+    , previousImageSize_(customInputDimensions_) {
+    
+	addPort(inport_);
     addProperty(inputSize_);
     inport_.setOptional(true);
-    dimensions_.setSerializationMode(PropertySerializationMode::None);
-    dimensions_.onChange([this]() { widgetMetaData_->setDimensions(dimensions_.get()); });
+    
+	dimensions_.setSerializationMode(PropertySerializationMode::None);
+    dimensions_.onChange([this]() { sizeChanged(); });
     inputSize_.addProperty(dimensions_);
-    inport_.onChange([&]() {
-        if (inport_.hasData()) {
-            if (dimensionOld_ != vec2(inport_.getData()->getDimensions()[0],
-                                      inport_.getData()->getDimensions()[1])) {
-                dimensionOld_ = vec2(inport_.getData()->getDimensions()[0],
-                                     inport_.getData()->getDimensions()[1]);
-				sender_.ReleaseSender();
-                sender_.CreateSender("inviwo_sender", dimensionOld_.x, dimensionOld_.y);
-			}
-        } else {
-            sender_.ReleaseSender();
-        }
-    });
+
+    enableCustomInputDimensions_.onChange([this]() { sizeChanged(); });
+    inputSize_.addProperty(enableCustomInputDimensions_);
+
+    customInputDimensions_.onChange([this]() { sizeChanged(); });
+    customInputDimensions_.setVisible(false);
+    inputSize_.addProperty(customInputDimensions_);
+
+    inport_.onConnect([&]() { sizeChanged(); });
+
+	setAllPropertiesCurrentStateAsDefault();
 }
 
 Spout::~Spout() = default;
+
+void Spout::setCanvasSize(ivec2 dim) {
+    NetworkLock lock(this);
+    dimensions_.set(dim);
+    sizeChanged();
+}
+
+ivec2 Spout::getCanvasSize() const { return dimensions_; }
+
+bool Spout::getUseCustomDimensions() const { return enableCustomInputDimensions_; }
+ivec2 Spout::getCustomDimensions() const { return customInputDimensions_; }
+
+void Spout::sizeChanged() {
+    NetworkLock lock(this);
+
+    customInputDimensions_.setVisible(enableCustomInputDimensions_);
+
+    ResizeEvent resizeEvent(uvec2(0));
+    if (enableCustomInputDimensions_) {
+        resizeEvent.setSize(static_cast<uvec2>(customInputDimensions_.get()));
+        resizeEvent.setPreviousSize(static_cast<uvec2>(previousImageSize_));
+        previousImageSize_ = customInputDimensions_;
+    } else {
+        resizeEvent.setSize(static_cast<uvec2>(dimensions_.get()));
+        resizeEvent.setPreviousSize(static_cast<uvec2>(previousImageSize_));
+        previousImageSize_ = dimensions_;
+    }
+
+	if (inport_.hasData()) {
+        sender_.ReleaseSender();
+        sender_.CreateSender("inviwo_sender", dimensions_.get().x, dimensions_.get().y);
+    } else {
+        sender_.ReleaseSender();
+    }
+
+    inputSize_.invalidate(InvalidationLevel::Valid, &customInputDimensions_);
+    inport_.propagateEvent(&resizeEvent);
+}
 
 void Spout::process() {
     if (inport_.hasData()) {
         sender_.SendTexture(
             inport_.getData()->getColorLayer()->getRepresentation<LayerGL>()->getTexture()->getID(),
-            GL_TEXTURE_2D, dimensionOld_.x, dimensionOld_.y);
+            GL_TEXTURE_2D, previousImageSize_.x, previousImageSize_.y);
     }
 }
 }  // namespace inviwo
