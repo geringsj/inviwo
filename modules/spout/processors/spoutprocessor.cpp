@@ -46,24 +46,34 @@ const ProcessorInfo Spout::processorInfo_{
 };
 const ProcessorInfo Spout::getProcessorInfo() const { return processorInfo_; }
 
-Spout::Spout(): Processor()
+Spout::Spout()
+    : Processor()
     , inport_("inport")
     , dimensions_("dimensions", "Canvas Size", ivec2(256, 256), ivec2(128, 128), ivec2(4096, 4096),
                   ivec2(1, 1), InvalidationLevel::Valid)
     , inputSize_("inputSize", "Input Dimension Parameters")
-    , widgetMetaData_{
-          createMetaData<ProcessorWidgetMetaData>(ProcessorWidgetMetaData::CLASS_IDENTIFIER)} {
+    , widgetMetaData_{createMetaData<ProcessorWidgetMetaData>(
+          ProcessorWidgetMetaData::CLASS_IDENTIFIER)}
+    , dimensionOld_(vec2(0, 0)) {
     addPort(inport_);
     addProperty(inputSize_);
     inport_.setOptional(true);
-
     dimensions_.setSerializationMode(PropertySerializationMode::None);
     dimensions_.onChange([this]() { widgetMetaData_->setDimensions(dimensions_.get()); });
     inputSize_.addProperty(dimensions_);
     inport_.onChange([&]() {
-        sender_.ReleaseSender();
-        sender_.CreateSender("inviwo_sender", inport_.getData()->getDimensions()[0],
-                             inport_.getData()->getDimensions()[1]);
+        if (inport_.hasData()) {
+            if (dimensionOld_ != vec2(inport_.getData()->getDimensions()[0],
+                                      inport_.getData()->getDimensions()[1])) {
+                dimensionOld_ = vec2(inport_.getData()->getDimensions()[0],
+                                     inport_.getData()->getDimensions()[1]);
+				LogWarn(inport_.getData()->getDimensions());
+				sender_.ReleaseSender();
+                sender_.CreateSender("inviwo_sender", dimensionOld_.x, dimensionOld_.y);
+			}
+        } else {
+            sender_.ReleaseSender();
+        }
     });
 }
 
@@ -73,8 +83,7 @@ void Spout::process() {
     if (inport_.hasData()) {
         sender_.SendTexture(
             inport_.getData()->getColorLayer()->getRepresentation<LayerGL>()->getTexture()->getID(),
-            GL_TEXTURE_2D, inport_.getData()->getDimensions()[0],
-                            inport_.getData()->getDimensions()[1]);
+            GL_TEXTURE_2D, dimensionOld_.x, dimensionOld_.y);
     }
 }
 }  // namespace inviwo
