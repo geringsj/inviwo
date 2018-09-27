@@ -75,6 +75,7 @@ private:
 
     ProcessorWidgetMetaData* widgetMetaData_;
 	SpoutSender sender_;
+    vec2 dimensionOld_;
 };
 
 }  // namespace inviwo
