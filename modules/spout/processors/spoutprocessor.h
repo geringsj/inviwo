@@ -36,6 +36,7 @@
 #include <inviwo/core/properties/optionproperty.h>
 #include <inviwo/core/properties/ordinalproperty.h>
 #include <inviwo/core/properties/buttonproperty.h>
+#include <inviwo/core/properties/stringproperty.h>
 #include <inviwo/core/ports/imageport.h>
 #include <modules/opengl/shader/shader.h>
 #include "../ext/Spout.h"
@@ -80,9 +81,11 @@ public:
     CompositeProperty inputSize_;
     BoolProperty enableCustomInputDimensions_;
     IntVec2Property customInputDimensions_;
+    StringProperty senderName_;
 
 private:
     void sizeChanged();
+    void nameChanged();
 
 	SpoutSender sender_;
     ivec2 previousImageSize_;
