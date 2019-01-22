@@ -6,3 +6,4 @@ tools/doxygen/doc-qt
 pyconfig.ini
 .idea
 build
+.vscode/settings.json
