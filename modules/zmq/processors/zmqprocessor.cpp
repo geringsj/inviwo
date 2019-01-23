@@ -30,6 +30,7 @@
 #include <modules/zmq/processors/zmqprocessor.h>
 #include <inviwo/core/common/inviwoapplication.h>
 #include <inviwo/core/network/networklock.h>
+#include <limits>
 
 namespace inviwo {
 
@@ -49,11 +50,12 @@ Zmq::Zmq()
 	, user_socket_(ctx_, ZMQ_SUB)
 	, should_run_(true)
     , camParams_("cameraParameters", "Camera Parameters")
-    , camera_pos_("camerapos", "Camera Pos", vec3(0.0), vec3(-1.0), vec3(1.0), vec3(0.001), InvalidationLevel::Valid)
-    , camera_rot_("camerarot", "Camera Rot", vec4(0.0), vec4(-1.0), vec4(1.0), vec4(0.001), InvalidationLevel::Valid)
+    , camera_pos_("camerapos", "Camera Pos", vec3(0.0), vec3(-std::numeric_limits<float>::infinity()), vec3(std::numeric_limits<float>::infinity()), vec3(0.01),
+                  InvalidationLevel::Valid)
+    , camera_rot_("camerarot", "Camera Rot", vec4(0.0), vec4(-1.0), vec4(1.0), vec4(0.01), InvalidationLevel::Valid)
     , userParams_("userParameters", "User Parameters")
-    , user_pos_("userpos", "User Pos", vec3(0.0), vec3(-1.0), vec3(1.0), vec3(0.001), InvalidationLevel::Valid)
-    , user_rot_("userrot", "User Rot", vec4(0.0), vec4(-1.0), vec4(1.0), vec4(0.001), InvalidationLevel::Valid) {
+    , user_pos_("userpos", "User Pos", vec3(0.0), vec3(-std::numeric_limits<float>::infinity()), vec3(std::numeric_limits<float>::infinity()), vec3(0.01), InvalidationLevel::Valid)
+    , user_rot_("userrot", "User Rot", vec4(0.0), vec4(-1.0), vec4(1.0), vec4(0.01), InvalidationLevel::Valid) {
 
 	addProperty(camParams_);
 	camParams_.addProperty(camera_pos_);
@@ -88,11 +90,12 @@ void Zmq::receiveZMQ() {
         dispatchFront([this]() {
             if (camera_address_string_ == "camPos") {
                 camera_pos_.set(vec3(j_camera["x"], j_camera["y"], j_camera["z"]));
+                user_pos_.set(vec3(-j_camera["x"], -j_camera["y"], -j_camera["z"]));
 			} else if (camera_address_string_ == "camRot") {
                 camera_rot_.set(vec4(j_camera["x"], j_camera["y"], j_camera["z"], j_camera["w"]));
 			}
         });
-
+        /*
         user_socket_.recv(&address_);
 		user_socket_.recv(&message_);
     	user_address_string_ = std::string(static_cast<char*>(address_.data()), address_.size());
@@ -104,6 +107,7 @@ void Zmq::receiveZMQ() {
                 user_rot_.set(vec4(j_user["x"], j_user["y"], j_user["z"], j_user["w"]));
 			}
         });
+		*/
 
 		dispatchFront([this]() {
             invalidate(InvalidationLevel::InvalidOutput); 
