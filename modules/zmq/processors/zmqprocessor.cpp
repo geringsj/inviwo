@@ -86,19 +86,15 @@ void Zmq::receiveZMQ() {
 			float r = sqrt(pow(cartesian.x, 2.0) + pow(cartesian.y, 2.0) + pow(cartesian.z, 2.0));
 			float phi = acos(cartesian.z / r);
 			float theta = atan(cartesian.y / cartesian.x);
-            vec3 spherical = vec3(r, M_PI + phi, theta);
-			float x = 0;
-			float y = 0;
-			float z = 0;
+            vec3 spherical = vec3(r, phi, theta);
 			if (cartesian.x <= 0) {
-                x = r * sin(M_PI + phi) * cos(theta);
-                y = r * sin(M_PI + phi) * sin(theta);
-                z = r * cos(M_PI + phi);
+                spherical.y = M_PI + spherical.y;
             } else {
-                x = r * sin(M_PI - phi) * cos(theta);
-                y = r * sin(M_PI - phi) * sin(theta);
-                z = r * cos(M_PI - phi);
+				spherical.y = M_PI - spherical.y;
 			}
+            float x = spherical.x * sin(spherical.y) * cos(spherical.z);
+            float y = spherical.x * sin(spherical.y) * sin(spherical.z);
+            float z = spherical.x * cos(spherical.y);
             cameraFrom_.set(distance_.get() * vec3(x, y, z));
         });
         dispatchFront([this]() { invalidate(InvalidationLevel::InvalidOutput); });
