@@ -35,83 +35,73 @@
 namespace inviwo {
 
 const ProcessorInfo Zmq::processorInfo_{
-    "org.inviwo.Zmq",       // Class identifier
-    "Zmq",                  // Display name
+    "org.inviwo.Zmq",         // Class identifier
+    "Zmq",                    // Display name
     "Image Operation",        // Category
     CodeState::Experimental,  // Code state
     Tags::GL,                 // Tags
 };
 const ProcessorInfo Zmq::getProcessorInfo() const { return processorInfo_; }
 
-Zmq::Zmq() 
-	: Processor() 
-	, ctx_(1)
-	, camera_socket_(ctx_, ZMQ_SUB)
-	, user_socket_(ctx_, ZMQ_SUB)
-	, should_run_(true)
-    , camParams_("cameraParameters", "Camera Parameters")
-    , camera_pos_("camerapos", "Camera Pos", vec3(0.0), vec3(-std::numeric_limits<float>::infinity()), vec3(std::numeric_limits<float>::infinity()), vec3(0.01),
-                  InvalidationLevel::Valid)
-    , camera_rot_("camerarot", "Camera Rot", vec4(0.0), vec4(-1.0), vec4(1.0), vec4(0.01), InvalidationLevel::Valid)
-    , userParams_("userParameters", "User Parameters")
-    , user_pos_("userpos", "User Pos", vec3(0.0), vec3(-std::numeric_limits<float>::infinity()), vec3(std::numeric_limits<float>::infinity()), vec3(0.01), InvalidationLevel::Valid)
-    , user_rot_("userrot", "User Rot", vec4(0.0), vec4(-1.0), vec4(1.0), vec4(0.01), InvalidationLevel::Valid) {
+Zmq::Zmq()
+    : Processor()
+    , ctx_(1)
+    , camera_socket_(ctx_, ZMQ_SUB)
+    , should_run_(true)
+    , camParams_("camparams", "Camera Parameters")
+    , distance_("distance", "Distance", 20.0f, 0.0f, 1000.0f, 0.1f, InvalidationLevel::Valid)
+    , cameraFrom_("lookFrom", "Look From", vec3(1.0f), -vec3(1000.0f), vec3(1000.0f), vec3(0.1f),
+                  InvalidationLevel::Valid, PropertySemantics("Spherical"))
+    , cameraTo_("lookTo", "Look to", vec3(0.0f), -vec3(100.0f), vec3(100.0f), vec3(0.1f))
+    , cameraUp_("lookUp", "Look up", vec3(0.0f, 1.0f, 0.0f), -vec3(100.0f), vec3(100.0f), vec3(0.1f)) {
 
-	addProperty(camParams_);
-	camParams_.addProperty(camera_pos_);
-	camParams_.addProperty(camera_rot_);
-    addProperty(userParams_);
-	userParams_.addProperty(user_pos_);
-	userParams_.addProperty(user_rot_);
+    addProperty(camParams_);
+    camParams_.addProperty(distance_);
+    camParams_.addProperty(cameraFrom_);
+    cameraFrom_.setReadOnly(true);
+    camParams_.addProperty(cameraTo_);
+    cameraTo_.setReadOnly(true);
+    camParams_.addProperty(cameraUp_);
+    cameraUp_.setReadOnly(true);
 
     camera_socket_.setsockopt(ZMQ_IDENTITY, "Inviwo", 6);
-    camera_socket_.setsockopt(ZMQ_SUBSCRIBE, "", 0);
+    camera_socket_.setsockopt(ZMQ_SUBSCRIBE, "camVec", 6);
     camera_socket_.connect("tcp://localhost:12345");
-	
-    user_socket_.setsockopt(ZMQ_IDENTITY, "Inviwo", 6);
-    user_socket_.setsockopt(ZMQ_SUBSCRIBE, "", 0);
-    user_socket_.connect("tcp://localhost:12346");
 
     receiveZMQ();
 }
 
-Zmq::~Zmq() { 
-	should_run_ = false;
-}
+Zmq::~Zmq() { should_run_ = false; }
 
 void Zmq::process() { receiveZMQ(); }
 
-void Zmq::receiveZMQ() { 
+void Zmq::receiveZMQ() {
     result_ = dispatchPool([this]() {
         camera_socket_.recv(&address_);
-		camera_socket_.recv(&message_);
-    	camera_address_string_ = std::string(static_cast<char*>(address_.data()), address_.size());
+        camera_socket_.recv(&message_);
+        camera_address_string_ = std::string(static_cast<char*>(address_.data()), address_.size());
         j_camera = json::parse(std::string(static_cast<char*>(message_.data()), message_.size()));
-        dispatchFront([this]() {
-            if (camera_address_string_ == "camPos") {
-                camera_pos_.set(vec3(j_camera["x"], j_camera["y"], j_camera["z"]));
-                user_pos_.set(vec3(-j_camera["x"], -j_camera["y"], -j_camera["z"]));
-			} else if (camera_address_string_ == "camRot") {
-                camera_rot_.set(vec4(j_camera["x"], j_camera["y"], j_camera["z"], j_camera["w"]));
-			}
-        });
-        /*
-        user_socket_.recv(&address_);
-		user_socket_.recv(&message_);
-    	user_address_string_ = std::string(static_cast<char*>(address_.data()), address_.size());
-        j_user = json::parse(std::string(static_cast<char*>(message_.data()), message_.size()));
-        dispatchFront([this]() {
-            if (user_address_string_ == "userPos") {
-                user_pos_.set(vec3(j_user["x"], j_user["y"], j_user["z"]));
-			} else if (user_address_string_ == "userRot") {
-                user_rot_.set(vec4(j_user["x"], j_user["y"], j_user["z"], j_user["w"]));
-			}
-        });
-		*/
-
 		dispatchFront([this]() {
-            invalidate(InvalidationLevel::InvalidOutput); 
-		});
+			vec3 cartesian = vec3(j_camera["x"], j_camera["y"], j_camera["z"]);
+			float r = sqrt(pow(cartesian.x, 2.0) + pow(cartesian.y, 2.0) + pow(cartesian.z, 2.0));
+			float phi = acos(cartesian.z / r);
+			float theta = atan(cartesian.y / cartesian.x);
+            vec3 spherical = vec3(r, M_PI + phi, theta);
+			float x = 0;
+			float y = 0;
+			float z = 0;
+			if (cartesian.x <= 0) {
+                x = r * sin(M_PI + phi) * cos(theta);
+                y = r * sin(M_PI + phi) * sin(theta);
+                z = r * cos(M_PI + phi);
+            } else {
+                x = r * sin(M_PI - phi) * cos(theta);
+                y = r * sin(M_PI - phi) * sin(theta);
+                z = r * cos(M_PI - phi);
+			}
+            cameraFrom_.set(distance_.get() * vec3(x, y, z));
+        });
+        dispatchFront([this]() { invalidate(InvalidationLevel::InvalidOutput); });
     });
 }
 }  // namespace inviwo
