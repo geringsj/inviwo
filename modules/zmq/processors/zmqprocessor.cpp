@@ -89,7 +89,7 @@ void Zmq::receiveZMQ() {
             camera_socket_.recv(&address2_);
             camera_socket_.recv(&message2_);
         
-			if (future.wait_for(0) == std::future_status::ready) {
+			if (future_.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready) {
 				future_ = dispatchFront([this]() {
 					parseMessage(
 						json::parse(std::string(static_cast<char*>(message1_.data()), message1_.size())),
