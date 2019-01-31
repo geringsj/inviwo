@@ -61,13 +61,13 @@ Zmq::Zmq()
     camParams_.addProperty(distance_);
     camParams_.addProperty(cameraLFrom_);
     camParams_.addProperty(cameraRFrom_);
+    camParams_.addProperty(cameraTo_);
+    camParams_.addProperty(cameraUp_);
     cameraLFrom_.setReadOnly(true);
     cameraRFrom_.setReadOnly(true);
     cameraRFrom_.setReadOnly(true);
-    camParams_.addProperty(cameraTo_);
-    //cameraTo_.setReadOnly(true);
-    camParams_.addProperty(cameraUp_);
-    //cameraUp_.setReadOnly(true);
+    cameraTo_.setReadOnly(true);
+    cameraUp_.setReadOnly(true);
 
     camera_socket_.setsockopt(ZMQ_IDENTITY, "Inviwo", 6);
     camera_socket_.setsockopt(ZMQ_SUBSCRIBE, "", 0);
@@ -79,62 +79,54 @@ Zmq::Zmq()
 Zmq::~Zmq() { should_run_ = false; }
 
 void Zmq::process() {
-    if (should_run_) {
-        receiveZMQ();
-	} 
 }
 
 void Zmq::receiveZMQ() {
-    result_ = dispatchPool([this]() {
-        camera_socket_.recv(&address1_);
-        camera_socket_.recv(&message1_);
-        dispatchFront([this]() {
-            parseMessage(
-                json::parse(std::string(static_cast<char*>(message1_.data()), message1_.size())),
-                     std::string(static_cast<char*>(address1_.data()), address1_.size()));
-        });
-        camera_socket_.recv(&address2_);
-        camera_socket_.recv(&message2_);
-        dispatchFront([this]() {
-            parseMessage(
-                json::parse(std::string(static_cast<char*>(message2_.data()), message2_.size())),
-                     std::string(static_cast<char*>(address2_.data()), address2_.size()));
-        });
-        dispatchFront([this]() { invalidate(InvalidationLevel::InvalidOutput); });      
+    dispatchPool([this]() {
+        while (should_run_) {
+            camera_socket_.recv(&address1_);
+            camera_socket_.recv(&message1_);
+            camera_socket_.recv(&address2_);
+            camera_socket_.recv(&message2_);
+        
+			if (future.wait_for(0) == std::future_status::ready) {
+				future_ = dispatchFront([this]() {
+					parseMessage(
+						json::parse(std::string(static_cast<char*>(message1_.data()), message1_.size())),
+							std::string(static_cast<char*>(address1_.data()), address1_.size()));
+					parseMessage(
+						json::parse(std::string(static_cast<char*>(message2_.data()), message2_.size())),
+							std::string(static_cast<char*>(address2_.data()), address2_.size()));
+					invalidate(InvalidationLevel::InvalidOutput);
+				});
+            }
+        }
     });
 }
 
 void Zmq::parseMessage(json j_camera, std::string camera_address) {
     if (camera_address == "camVecCamL") {
         vec3 cartesian = vec3(j_camera["x"], j_camera["y"], j_camera["z"]);
-        float r = sqrt(pow(cartesian.x, 2.0) + pow(cartesian.y, 2.0) + pow(cartesian.z, 2.0));
-        float phi = acos(cartesian.z / r);
-        float theta = atan(cartesian.y / cartesian.x);
-        vec3 spherical = vec3(r, phi, theta);
-        if (cartesian.x <= 0) {
-            spherical.y = M_PI + spherical.y;
-        } else {
-            spherical.y = M_PI - spherical.y;
-        }
-        float x = spherical.x * sin(spherical.y) * cos(spherical.z);
-        float y = spherical.x * sin(spherical.y) * sin(spherical.z);
-        float z = spherical.x * cos(spherical.y);
-        cameraLFrom_.set(distance_.get() * vec3(x, y, z));
+        cameraLFrom_.set(distance_.get() * convertPosition(cartesian));
     } else if (camera_address == "camVecCamR") {
         vec3 cartesian = vec3(j_camera["x"], j_camera["y"], j_camera["z"]);
-        float r = sqrt(pow(cartesian.x, 2.0) + pow(cartesian.y, 2.0) + pow(cartesian.z, 2.0));
-        float phi = acos(cartesian.z / r);
-        float theta = atan(cartesian.y / cartesian.x);
-        vec3 spherical = vec3(r, phi, theta);
-        if (cartesian.x <= 0) {
-            spherical.y = M_PI + spherical.y;
-        } else {
-            spherical.y = M_PI - spherical.y;
-        }
-        float x = spherical.x * sin(spherical.y) * cos(spherical.z);
-        float y = spherical.x * sin(spherical.y) * sin(spherical.z);
-        float z = spherical.x * cos(spherical.y);
-        cameraRFrom_.set(distance_.get() * vec3(x, y, z));
+        cameraRFrom_.set(distance_.get() * convertPosition(cartesian));
     }
+}
+
+vec3 Zmq::convertPosition(vec3 cartesian) {
+    float r = sqrt(pow(cartesian.x, 2.0) + pow(cartesian.y, 2.0) + pow(cartesian.z, 2.0));
+    float phi = acos(cartesian.z / r);
+    float theta = atan(cartesian.y / cartesian.x);
+    vec3 spherical = vec3(r, phi, theta);
+    if (cartesian.x <= 0) {
+        spherical.y = M_PI + spherical.y;
+    } else {
+        spherical.y = M_PI - spherical.y;
+    }
+    float x = spherical.x * sin(spherical.y) * cos(spherical.z);
+    float y = spherical.x * sin(spherical.y) * sin(spherical.z);
+    float z = spherical.x * cos(spherical.y);
+    return (vec3(x, y, z));
 }
 }  // namespace inviwo
