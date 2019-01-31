@@ -72,7 +72,8 @@ public:
 private:
     CompositeProperty camParams_;
     FloatProperty distance_;
-    FloatVec3Property cameraFrom_;
+    FloatVec3Property cameraLFrom_;
+    FloatVec3Property cameraRFrom_;
     FloatVec3Property cameraTo_;
     FloatVec3Property cameraUp_;
 
@@ -80,15 +81,14 @@ private:
     std::future<void> result_;
 
 	void receiveZMQ();
+    void parseMessage(json j_camera, std::string camera_address);
 
     zmq::context_t ctx_;
     zmq::socket_t camera_socket_;
-    zmq::message_t address_;
-    zmq::message_t message_;
-	
-    std::string camera_address_string_;
-    std::string camera_message_string_;
-	json j_camera;
+    zmq::message_t address1_;
+    zmq::message_t message1_;
+    zmq::message_t address2_;
+    zmq::message_t message2_;
 };
 
 }  // namespace inviwo
