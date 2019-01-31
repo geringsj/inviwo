@@ -77,11 +77,12 @@ private:
     FloatVec3Property cameraTo_;
     FloatVec3Property cameraUp_;
 
-    bool should_run_;
-    std::future<void> result_;
+	bool should_run_;
+    std::future<void> future_;
 
 	void receiveZMQ();
     void parseMessage(json j_camera, std::string camera_address);
+    vec3 convertPosition(vec3 cartesian);
 
     zmq::context_t ctx_;
     zmq::socket_t camera_socket_;
