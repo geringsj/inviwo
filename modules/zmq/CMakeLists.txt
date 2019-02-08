@@ -6,6 +6,7 @@ ivw_module(Zmq)
 # Add header files
 set(HEADER_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/processors/zmqprocessor.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/processors/zmqvolumeboxpublisher.h
     ${CMAKE_CURRENT_SOURCE_DIR}/ext/json.hpp
 ) 
 ivw_group("Header Files" ${HEADER_FILES})
@@ -14,6 +15,7 @@ ivw_group("Header Files" ${HEADER_FILES})
 # Add source files
 set(SOURCE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/processors/zmqprocessor.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/processors/zmqvolumeboxpublisher.cpp
 )
 ivw_group("Source Files" ${SOURCE_FILES})
 

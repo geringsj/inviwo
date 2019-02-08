@@ -2,7 +2,7 @@
  *
  * Inviwo - Interactive Visualization Workshop
  *
- * Copyright (c) 2018 Inviwo Foundation
+ * Copyright (c) 2013-2018 Inviwo Foundation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,16 +27,58 @@
  *
  *********************************************************************************/
 
-#include <modules/zmq/zmqmodule.h>
-#include <modules/zmq/processors/zmqprocessor.h>
-#include <modules/zmq/processors/zmqvolumeboxpublisher.h>
+#ifndef IVW_ZMQVOLUMEBOXPROCESSOR_H
+#define IVW_ZMQVOLUMEBOXPROCESSOR_H
+
+#include <modules/zmq/zmqmoduledefine.h>
+#include <inviwo/core/common/inviwo.h>
+#include <inviwo/core/processors/processor.h>
+#include <inviwo/core/properties/ordinalproperty.h>
+#include <inviwo/core/properties/compositeproperty.h>
+#include <inviwo/core/ports/volumeport.h>
+#include <zmq.hpp>
+#include <thread>
+#include "../ext/json.hpp"
+
+using json = nlohmann::json;
 
 namespace inviwo {
 
-ZmqModule::ZmqModule(InviwoApplication* app) : InviwoModule(app, "zmq") {
-    // Register objects that can be shared with the rest of inviwo here:
-    // Processors
-    registerProcessor<Zmq>();
-    registerProcessor<ZmqVolumeBoxProcessor>();
-}
+/** \docpage{org.inviwo.ZMQVolumeBoxPublisher, ZMQVolumeBoxPublisher}
+ * ![](org.inviwo.ZMQVolumeBoxPuiblisher.png?classIdentifier=org.inviwo.ZMQVolumeBocPublisher)
+ * Uses ZMQ to publish the volume bounding box.
+ *
+ * ### Inports
+ *   * __VolumeInport__ Input volume.
+ *
+ * ### Properties
+ */
+
+/**
+ * \brief Publishes the volume bounding box via ZMQ.
+ *
+ */
+class IVW_MODULE_ZMQ_API ZmqVolumeBoxProcessor : public Processor {
+public:
+    ZmqVolumeBoxProcessor();
+    virtual ~ZmqVolumeBoxProcessor();
+
+    virtual void process() override;
+
+    virtual const ProcessorInfo getProcessorInfo() const override;
+    static const ProcessorInfo processorInfo_;
+
+public:
+
+private:
+    VolumeInport volume_;
+
+	void sendZMQ();
+    void packMessage();
+
+    zmq::context_t ctx_;
+    zmq::socket_t socket_;
+};
 }  // namespace inviwo
+
+#endif  // IVW_ZMQVOLUMEBOXPROCESSOR_H
