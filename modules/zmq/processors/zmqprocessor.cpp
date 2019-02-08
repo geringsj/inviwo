@@ -71,37 +71,38 @@ Zmq::Zmq()
 
     camera_socket_.setsockopt(ZMQ_IDENTITY, "Inviwo", 6);
     camera_socket_.setsockopt(ZMQ_SUBSCRIBE, "", 0);
+    //int t = 2;
+    //camera_socket_.setsockopt(ZMQ_RCVTIMEO, &t, sizeof(t));
     camera_socket_.connect("tcp://localhost:12345");
 
-    receiveZMQ();
+	thread_ = std::thread(&Zmq::receiveZMQ, this);
 }
 
-Zmq::~Zmq() { should_run_ = false; }
+Zmq::~Zmq() { 
+	should_run_ = false;
+    thread_.join();
+}
 
 void Zmq::process() {
 }
 
 void Zmq::receiveZMQ() {
-    dispatchPool([this]() {
-        while (should_run_) {
-            camera_socket_.recv(&address1_);
-            camera_socket_.recv(&message1_);
-            camera_socket_.recv(&address2_);
-            camera_socket_.recv(&message2_);
-        
-			if (future_.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready) {
-				future_ = dispatchFront([this]() {
-					parseMessage(
-						json::parse(std::string(static_cast<char*>(message1_.data()), message1_.size())),
+    while (should_run_ == true) {
+        camera_socket_.recv(&address1_);
+        camera_socket_.recv(&message1_);
+        camera_socket_.recv(&address2_);
+        camera_socket_.recv(&message2_);
+         
+		if (future_.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready) {
+			future_ = dispatchFront([this]() {
+				parseMessage(json::parse(std::string(static_cast<char*>(message1_.data()), message1_.size())),
 							std::string(static_cast<char*>(address1_.data()), address1_.size()));
-					parseMessage(
-						json::parse(std::string(static_cast<char*>(message2_.data()), message2_.size())),
+				parseMessage(json::parse(std::string(static_cast<char*>(message2_.data()), message2_.size())),
 							std::string(static_cast<char*>(address2_.data()), address2_.size()));
-					invalidate(InvalidationLevel::InvalidOutput);
-				});
-            }
+				invalidate(InvalidationLevel::InvalidOutput);
+			});
         }
-    });
+	}
 }
 
 void Zmq::parseMessage(json j_camera, std::string camera_address) {
