@@ -2,7 +2,7 @@
  *
  * Inviwo - Interactive Visualization Workshop
  *
- * Copyright (c) 2018 Inviwo Foundation
+ * Copyright (c) 2013-2018 Inviwo Foundation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,16 +27,55 @@
  *
  *********************************************************************************/
 
-#include <modules/zmq/zmqmodule.h>
-#include <modules/zmq/processors/zmqprocessor.h>
 #include <modules/zmq/processors/zmqvolumeboxpublisher.h>
+#include <inviwo/core/common/inviwoapplication.h>
+#include <inviwo/core/network/networklock.h>
+#include <limits>
+#include <Windows.h>
 
 namespace inviwo {
 
-ZmqModule::ZmqModule(InviwoApplication* app) : InviwoModule(app, "zmq") {
-    // Register objects that can be shared with the rest of inviwo here:
-    // Processors
-    registerProcessor<Zmq>();
-    registerProcessor<ZmqVolumeBoxProcessor>();
+const ProcessorInfo ZmqVolumeBoxProcessor::processorInfo_{
+    "org.inviwo.ZmqVolumeBoxProcessor",         // Class identifier
+    "ZmqVolumeBoxProcessor",                    // Display name
+    "Image Operation",        // Category
+    CodeState::Experimental,  // Code state
+    Tags::GL,                 // Tags
+};
+const ProcessorInfo ZmqVolumeBoxProcessor::getProcessorInfo() const { return processorInfo_; }
+
+ZmqVolumeBoxProcessor::ZmqVolumeBoxProcessor()
+    : Processor()
+    , volume_("volume")
+    , ctx_(1)
+    , socket_(ctx_, ZMQ_PUB) {
+
+    addPort(volume_);
+
+	socket_.bind("tcp://*:12346");
+	//sendZMQ();
+	std::string str = "";
+    zmq::message_t message(static_cast<const void*> (str.data()), str.size());
+	std::string str2 = "Hallo";
+    zmq::message_t message2(static_cast<const void*> (str2.data()), str2.size());
+	//memcpy(message.data(), str.data(), str.size());
+    socket_.send(message, ZMQ_SNDMORE);
+    socket_.send(message2);
+}
+
+ZmqVolumeBoxProcessor::~ZmqVolumeBoxProcessor() {}
+
+void ZmqVolumeBoxProcessor::process() {
+}
+
+void ZmqVolumeBoxProcessor::sendZMQ() { 
+	std::string str = "Hallo";
+    zmq::message_t message(str.size());
+	memcpy(message.data(), str.data(), str.size());
+    LogInfo(str.data());
+    LogInfo(socket_.send(message));
+}
+
+void ZmqVolumeBoxProcessor::packMessage() {
 }
 }  // namespace inviwo
