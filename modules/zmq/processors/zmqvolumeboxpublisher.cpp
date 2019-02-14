@@ -54,11 +54,11 @@ ZmqVolumeBoxProcessor::ZmqVolumeBoxProcessor()
 
 	socket_.bind("tcp://*:12346");
 	//sendZMQ();
-	std::string str = "";
+	std::string str = "inviwo";
     zmq::message_t message(static_cast<const void*> (str.data()), str.size());
 	std::string str2 = "Hallo";
     zmq::message_t message2(static_cast<const void*> (str2.data()), str2.size());
-	//memcpy(message.data(), str.data(), str.size());
+	
     socket_.send(message, ZMQ_SNDMORE);
     socket_.send(message2);
 }
