@@ -34,6 +34,7 @@
 #include <inviwo/core/common/inviwo.h>
 #include <inviwo/core/processors/processor.h>
 #include <inviwo/core/properties/ordinalproperty.h>
+#include <inviwo/core/properties/cameraproperty.h>
 #include <inviwo/core/properties/compositeproperty.h>
 #include <zmq.hpp>
 #include <thread>
@@ -70,27 +71,28 @@ public:
 public:
 
 private:
-    CompositeProperty camParams_;
-    FloatProperty distance_;
+    CompositeProperty camParamsL_;
+    CompositeProperty camParamsR_;
     FloatVec3Property cameraLFrom_;
     FloatVec3Property cameraRFrom_;
-    FloatVec3Property cameraTo_;
-    FloatVec3Property cameraUp_;
+	FloatVec3Property cameraLTo_;
+    FloatVec3Property cameraRTo_;
+    FloatVec3Property cameraLUp_;
+    FloatVec3Property cameraRUp_;
 
 	std::atomic<bool> should_run_;
     std::future<void> future_;
 
 	void receiveZMQ();
-    void parseMessage(json j_camera, std::string camera_address);
+    void parseMessage(json content, std::string address);
     vec3 convertPosition(vec3 cartesian);
+    vec3 convertTo(vec3 cartesian, vec3 forward);
     std::thread thread_;
 
     zmq::context_t ctx_;
     zmq::socket_t camera_socket_;
-    zmq::message_t address1_;
-    zmq::message_t message1_;
-    zmq::message_t address2_;
-    zmq::message_t message2_;
+    zmq::message_t address_;
+    zmq::message_t message_;
 };
 
 }  // namespace inviwo
