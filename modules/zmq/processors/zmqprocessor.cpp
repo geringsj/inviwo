@@ -48,71 +48,83 @@ Zmq::Zmq()
     , ctx_(1)
     , camera_socket_(ctx_, ZMQ_SUB)
     , should_run_(true)
-    , camParams_("camparams", "Camera Parameters")
-    , distance_("distance", "Distance", 20.0f, 0.0f, 1000.0f, 0.1f, InvalidationLevel::Valid)
-    , cameraLFrom_("lookFromL", "Look From L", vec3(1.0f), -vec3(1000.0f), vec3(1000.0f), vec3(0.0001f),
-                  InvalidationLevel::Valid, PropertySemantics("Spherical"))
-    , cameraRFrom_("lookFromR", "Look From R", vec3(1.0f), -vec3(1000.0f), vec3(1000.0f), vec3(0.0001f),
-                   InvalidationLevel::Valid, PropertySemantics("Spherical"))
-    , cameraTo_("lookTo", "Look to", vec3(0.0f), -vec3(100.0f), vec3(100.0f), vec3(0.1f))
-    , cameraUp_("lookUp", "Look up", vec3(0.0f, 1.0f, 0.0f), -vec3(100.0f), vec3(100.0f), vec3(0.1f)) {
+    , camParamsL_("camparamsL", "Camera Parameters L")
+    , camParamsR_("camparamsR", "Camera Parameters R")
+    , cameraLFrom_("lookFromL", "Look From L", vec3(1.0f), -vec3(1000.0f), vec3(1000.0f),
+                   vec3(0.0001f), InvalidationLevel::Valid, PropertySemantics("Spherical"))
+    , cameraRFrom_("lookFromR", "Look From R", vec3(1.0f), -vec3(1000.0f), vec3(1000.0f),
+                   vec3(0.0001f), InvalidationLevel::Valid, PropertySemantics("Spherical"))
+    , cameraLTo_("lookToL", "Look to L", vec3(0.0f), -vec3(100.0f), vec3(100.0f), vec3(0.1f))
+    , cameraRTo_("lookToR", "Look to R", vec3(0.0f), -vec3(100.0f), vec3(100.0f), vec3(0.1f))
+	, cameraLUp_("lookUpL", "Look up L", vec3(0.0f, 1.0f, 0.0f), -vec3(100.0f), vec3(100.0f),
+                vec3(0.1f))
+    , cameraRUp_("lookUpR", "Look up R", vec3(0.0f, 1.0f, 0.0f), -vec3(100.0f), vec3(100.0f),
+                vec3(0.1f)) {
 
-    addProperty(camParams_);
-    camParams_.addProperty(distance_);
-    camParams_.addProperty(cameraLFrom_);
-    camParams_.addProperty(cameraRFrom_);
-    camParams_.addProperty(cameraTo_);
-    camParams_.addProperty(cameraUp_);
+    addProperty(camParamsL_);
+    camParamsL_.addProperty(cameraLFrom_);
+    camParamsL_.addProperty(cameraLTo_);
+    camParamsL_.addProperty(cameraLUp_);
+
+	addProperty(camParamsR_);
+    camParamsR_.addProperty(cameraRFrom_);
+    camParamsR_.addProperty(cameraRTo_);
+	camParamsR_.addProperty(cameraRUp_);
+
+
     cameraLFrom_.setReadOnly(true);
     cameraRFrom_.setReadOnly(true);
     cameraRFrom_.setReadOnly(true);
-    cameraTo_.setReadOnly(true);
-    cameraUp_.setReadOnly(true);
+    cameraLTo_.setReadOnly(true);
+    cameraRTo_.setReadOnly(true);
+    cameraLUp_.setReadOnly(true);
+    cameraRUp_.setReadOnly(true);
 
     camera_socket_.setsockopt(ZMQ_IDENTITY, "Inviwo", 6);
     camera_socket_.setsockopt(ZMQ_SUBSCRIBE, "", 0);
-    //int t = 2;
-    //camera_socket_.setsockopt(ZMQ_RCVTIMEO, &t, sizeof(t));
+    // int t = 2;
+    // camera_socket_.setsockopt(ZMQ_RCVTIMEO, &t, sizeof(t));
     camera_socket_.connect("tcp://localhost:12345");
 
-	thread_ = std::thread(&Zmq::receiveZMQ, this);
+    thread_ = std::thread(&Zmq::receiveZMQ, this);
 }
 
-Zmq::~Zmq() { 
-	should_run_ = false;
+Zmq::~Zmq() {
+    should_run_ = false;
     thread_.join();
 }
 
-void Zmq::process() {
-}
+void Zmq::process() {}
 
 void Zmq::receiveZMQ() {
+    future_ = dispatchFront([this]() {});
     while (should_run_ == true) {
-        camera_socket_.recv(&address1_);
-        camera_socket_.recv(&message1_);
-        camera_socket_.recv(&address2_);
-        camera_socket_.recv(&message2_);
-         
-		if (future_.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready) {
-			future_ = dispatchFront([this]() {
-				parseMessage(json::parse(std::string(static_cast<char*>(message1_.data()), message1_.size())),
-							std::string(static_cast<char*>(address1_.data()), address1_.size()));
-				parseMessage(json::parse(std::string(static_cast<char*>(message2_.data()), message2_.size())),
-							std::string(static_cast<char*>(address2_.data()), address2_.size()));
-				invalidate(InvalidationLevel::InvalidOutput);
-			});
+        camera_socket_.recv(&address_);
+        camera_socket_.recv(&message_);
+
+        if (future_.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready) {
+            future_ = dispatchFront([this]() {
+                parseMessage(
+                    json::parse(std::string(static_cast<char*>(message_.data()), message_.size())),
+					std::string(static_cast<char*>(address_.data()), address_.size()));
+                invalidate(InvalidationLevel::InvalidOutput);
+            });
         }
-	}
+    }
 }
 
-void Zmq::parseMessage(json j_camera, std::string camera_address) {
-    if (camera_address == "camVecCamL") {
-        vec3 cartesian = vec3(j_camera["x"], j_camera["y"], j_camera["z"]);
-        cameraLFrom_.set(distance_.get() * convertPosition(cartesian));
-    } else if (camera_address == "camVecCamR") {
-        vec3 cartesian = vec3(j_camera["x"], j_camera["y"], j_camera["z"]);
-        cameraRFrom_.set(distance_.get() * convertPosition(cartesian));
-    }
+void Zmq::parseMessage(json content, std::string address) {
+    vec3 cartesian =
+        vec3(content["camVecCamL"]["x"], content["camVecCamL"]["y"], content["camVecCamL"]["z"]);
+	cameraLFrom_.set(convertPosition(cartesian));
+
+    cameraLUp_.set(vec3(content["camUpCamL"]["x"], content["camUpCamL"]["y"], content["camUpCamL"]["z"]));
+
+    cameraRFrom_.set(convertPosition(vec3(content["camVecCamR"]["x"], content["camVecCamR"]["y"], content["camVecCamR"]["z"])));
+    cameraRUp_.set(vec3(content["camUpCamR"]["x"], content["camUpCamR"]["y"], content["camUpCamR"]["z"]));
+
+	/*cameraTo_.set(sqrt(pow(cartesian.x, 2.0) + pow(cartesian.y, 2.0) + pow(cartesian.z, 2.0)) * vec3(
+        content["camFwdCamL"]["x"], content["camFwdCamL"]["y"], content["camFwdCamL"]["z"]));*/
 }
 
 vec3 Zmq::convertPosition(vec3 cartesian) {
