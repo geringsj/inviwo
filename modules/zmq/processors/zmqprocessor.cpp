@@ -114,17 +114,25 @@ void Zmq::receiveZMQ() {
 }
 
 void Zmq::parseMessage(json content, std::string address) {
-    vec3 cartesian =
-        vec3(content["camVecCamL"]["x"], content["camVecCamL"]["y"], content["camVecCamL"]["z"]);
-	cameraLFrom_.set(convertPosition(cartesian));
+	// Left Eye
+	// Get free fly props from unity
+    vec3 fromL = vec3(content["camVecCamL"]["x"], content["camVecCamL"]["y"], content["camVecCamL"]["z"]);
+    vec3 toL = vec3(content["camFwdCamL"]["x"], content["camFwdCamL"]["y"], content["camFwdCamL"]["z"]);
+    vec3 upL = vec3(content["camUpCamL"]["x"], content["camUpCamL"]["y"], content["camUpCamL"]["z"]);
+	// Set inviwo arcball props
+    cameraLFrom_.set(-to);
+    cameraLTo_.set(from + to);
+    cameraLUp_.set(up));
 
-    cameraLUp_.set(vec3(content["camUpCamL"]["x"], content["camUpCamL"]["y"], content["camUpCamL"]["z"]));
-
-    cameraRFrom_.set(convertPosition(vec3(content["camVecCamR"]["x"], content["camVecCamR"]["y"], content["camVecCamR"]["z"])));
-    cameraRUp_.set(vec3(content["camUpCamR"]["x"], content["camUpCamR"]["y"], content["camUpCamR"]["z"]));
-
-	/*cameraTo_.set(sqrt(pow(cartesian.x, 2.0) + pow(cartesian.y, 2.0) + pow(cartesian.z, 2.0)) * vec3(
-        content["camFwdCamL"]["x"], content["camFwdCamL"]["y"], content["camFwdCamL"]["z"]));*/
+	// Right Eye
+	// Get free fly props from unity
+    vec3 fromR = vec3(content["camVecCamR"]["x"], content["camVecCamR"]["y"], content["camVecCamR"]["z"]);
+    vec3 toR = vec3(content["camFwdCamR"]["x"], content["camFwdCamR"]["y"], content["camFwdCamR"]["z"]);
+    vec3 upR = vec3(content["camUpCamR"]["x"], content["camUpCamR"]["y"], content["camUpCamR"]["z"]);
+	// Set inviwo arcball props
+    cameraRFrom_.set(-to);
+    cameraRTo_.set(from + to);
+    cameraRUp_.set(up));
 }
 
 vec3 Zmq::convertPosition(vec3 cartesian) {
