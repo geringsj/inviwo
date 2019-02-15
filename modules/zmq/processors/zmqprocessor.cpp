@@ -107,7 +107,6 @@ void Zmq::receiveZMQ() {
                 parseMessage(
                     json::parse(std::string(static_cast<char*>(message_.data()), message_.size())),
 					std::string(static_cast<char*>(address_.data()), address_.size()));
-                invalidate(InvalidationLevel::InvalidOutput);
             });
         }
     }
@@ -117,22 +116,28 @@ void Zmq::parseMessage(json content, std::string address) {
 	// Left Eye
 	// Get free fly props from unity
     vec3 fromL = vec3(content["camVecCamL"]["x"], content["camVecCamL"]["y"], content["camVecCamL"]["z"]);
+	fromL.x = -fromL.x;
     vec3 toL = vec3(content["camFwdCamL"]["x"], content["camFwdCamL"]["y"], content["camFwdCamL"]["z"]);
+    toL.x = -toL.x;
     vec3 upL = vec3(content["camUpCamL"]["x"], content["camUpCamL"]["y"], content["camUpCamL"]["z"]);
+    upL.x = -upL.x;
 	// Set inviwo arcball props
-    cameraLFrom_.set(-to);
-    cameraLTo_.set(from + to);
-    cameraLUp_.set(up));
+    cameraLFrom_.set(fromL);
+    cameraLTo_.set(fromL + toL);
+    cameraLUp_.set(upL);
 
 	// Right Eye
 	// Get free fly props from unity
     vec3 fromR = vec3(content["camVecCamR"]["x"], content["camVecCamR"]["y"], content["camVecCamR"]["z"]);
+    fromR.x = -fromR.x;
     vec3 toR = vec3(content["camFwdCamR"]["x"], content["camFwdCamR"]["y"], content["camFwdCamR"]["z"]);
+    toR.x = -toR.x;
     vec3 upR = vec3(content["camUpCamR"]["x"], content["camUpCamR"]["y"], content["camUpCamR"]["z"]);
+    upR.x = -upR.x;
 	// Set inviwo arcball props
-    cameraRFrom_.set(-to);
-    cameraRTo_.set(from + to);
-    cameraRUp_.set(up));
+    cameraRFrom_.set(fromR);
+    cameraRTo_.set(fromR + toR);
+    cameraRUp_.set(upR);
 }
 
 vec3 Zmq::convertPosition(vec3 cartesian) {
