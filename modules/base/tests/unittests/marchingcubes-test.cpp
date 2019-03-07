@@ -2,7 +2,7 @@
  *
  * Inviwo - Interactive Visualization Workshop
  *
- * Copyright (c) 2013-2018 Inviwo Foundation
+ * Copyright (c) 2013-2019 Inviwo Foundation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -179,8 +179,6 @@ TEST(Marchingcubes, two) {
         return vec;
     };
 
-    const vec3 center{0.5f};
-
     std::vector<vec3> vals = {vec3{0.5f, 0.0f, 0.0f}, vec3{0.0f, 0.5f, 0.0f},
                               vec3{0.0f, 0.0f, 0.5f}};
     int n1nn = 0;
@@ -206,7 +204,7 @@ TEST(Marchingcubes, two) {
             vec3 fv1(v1);
             vec3 fv2(v2);
 
-            auto l2 = glm::compAdd((v2-v1)*(v2-v1));
+            auto l2 = glm::compAdd((v2 - v1) * (v2 - v1));
 
             if (l2 == 1) {
                 ++n1nn;
@@ -244,8 +242,6 @@ TEST(Marchingcubes, two) {
     EXPECT_EQ(24, n2nn);
     EXPECT_EQ(8, n3nn);
 }
-
-
 
 TEST(Marchingcubes, minimal) {
     auto v = std::shared_ptr<Volume>(util::makeSingleVoxelVolume(size3_t{3}));
@@ -327,7 +323,7 @@ TEST(Marchingcubes, sphere) {
 
     ASSERT_EQ(mesh1->getNumberOfIndicies(), 1);
     ASSERT_EQ(mesh2->getNumberOfIndicies(), 1);
-    
+
     /*
     auto indBuffer1 = mesh1->getIndices(0);
     auto indBuffer2 = mesh2->getIndices(0);

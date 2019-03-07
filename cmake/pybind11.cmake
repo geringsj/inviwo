@@ -2,7 +2,7 @@
 #
 # Inviwo - Interactive Visualization Workshop
 #
-# Copyright (c) 2013-2018 Inviwo Foundation
+# Copyright (c) 2013-2019 Inviwo Foundation
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -34,7 +34,7 @@
  set(_allPyBindWrappers "" CACHE INTERNAL  "")
 
 if(PYTHONLIBS_FOUND)
-    add_subdirectory(${IVW_ROOT_DIR}/ext/pybind11)
+    add_subdirectory(${IVW_EXTENSIONS_DIR}/pybind11)
 
     if(MSVC)
         # Prevent setting the /GL and -LTCG flag 

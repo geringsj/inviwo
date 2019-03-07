@@ -2,7 +2,7 @@
  *
  * Inviwo - Interactive Visualization Workshop
  *
- * Copyright (c) 2012-2018 Inviwo Foundation
+ * Copyright (c) 2012-2019 Inviwo Foundation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -71,25 +71,25 @@ public:
     // used to create hidden canvases used for context in background threads.
     virtual std::unique_ptr<Canvas> createHiddenCanvas() = 0;
     using ContextID = const void*;
-    virtual ContextID activeContext() const = 0; 
+    virtual ContextID activeContext() const = 0;
     virtual ContextID contextId() const = 0;
 
     virtual void releaseContext() = 0;
 
     bool isFullScreen() const;
-    /** 
-	 * Sets window state of canvas to cover the entire screen.
-	 * Will call setFullScreenInternal after setting full screen flag.
-	 * @see setFullScreenInternal
-	 */
+    /**
+     * Sets window state of canvas to cover the entire screen.
+     * Will call setFullScreenInternal after setting full screen flag.
+     * @see setFullScreenInternal
+     */
     void setFullScreen(bool fullscreen);
 
 protected:
     void propagateEvent(Event* e);
     /**
-     * Derived classes should override to implment actual window state.
+     * Derived classes should override to implement actual window state.
      */
-	virtual void setFullScreenInternal(bool fullscreen) = 0;
+    virtual void setFullScreenInternal(bool fullscreen) = 0;
 
     size2_t screenDimensions_;
     EventPropagator* propagator_;  //< non-owning reference
@@ -98,6 +98,6 @@ protected:
     bool isFullScreen_ = false;
 };
 
-}  // namespace
+}  // namespace inviwo
 
 #endif  // IVW_CANVAS_H

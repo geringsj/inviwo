@@ -2,7 +2,7 @@
  *
  * Inviwo - Interactive Visualization Workshop
  *
- * Copyright (c) 2013-2018 Inviwo Foundation
+ * Copyright (c) 2013-2019 Inviwo Foundation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -56,26 +56,6 @@ SystemCapabilities::~SystemCapabilities() {
 #endif
 }
 
-bool SystemCapabilities::canAllocate(glm::u64 dataSize, glm::u8 percentageOfAvailableMemory) {
-    return getAvailableMemory() * percentageOfAvailableMemory / 100 >= dataSize;
-}
-
-uvec3 SystemCapabilities::calculateOptimalBrickSize(uvec3 dimensions, size_t formatSizeInBytes,
-                                                    glm::u8 percentageOfAvailableMemory) {
-    uvec3 dim = dimensions;
-
-    while (
-        !canAllocate(getMemorySizeInBytes(dim, formatSizeInBytes), percentageOfAvailableMemory)) {
-        int theMaxDim = (dim.x > dim.y ? (dim.x > dim.z ? 0 : 2) : (dim.y > dim.z ? 1 : 2));
-
-        if (dim[theMaxDim] % 2 != 0) dim[theMaxDim]++;  // Make the dim we are dividing even
-
-        dim[theMaxDim] /= 2;
-    }
-
-    return dim;
-}
-
 void SystemCapabilities::retrieveStaticInfo() {
     successOSInfo_ = lookupOSInfo();
     buildInfo_ = util::getBuildInfo();
@@ -88,33 +68,7 @@ void SystemCapabilities::retrieveDynamicInfo() {
     successProcessMemoryInfo_ = lookupProcessMemoryInfo();
 }
 
-std::string SystemCapabilities::getBuildDateString() const {
-    std::stringstream ss;
-    ss << getBuildTimeYear() << "-" << std::setfill('0') << std::setw(2) << getBuildTimeMonth()
-       << "-" << std::setfill('0') << std::setw(2) << getBuildTimeDay() << " " << std::setfill('0')
-       << std::setw(2) << getBuildTimeHour() << ":" << std::setfill('0') << std::setw(2)
-       << getBuildTimeMinute() << ":" << std::setfill('0') << std::setw(2) << getBuildTimeSecond();
-    return ss.str();
-}
-
-int SystemCapabilities::getBuildTimeYear() const { return buildInfo_.year; }
-
-int SystemCapabilities::getBuildTimeMonth() const { return buildInfo_.month; }
-
-int SystemCapabilities::getBuildTimeDay() const { return buildInfo_.day; }
-
-int SystemCapabilities::getBuildTimeHour() const { return buildInfo_.hour; }
-
-int SystemCapabilities::getBuildTimeMinute() const { return buildInfo_.minute; }
-
-int SystemCapabilities::getBuildTimeSecond() const { return buildInfo_.second; }
-
-std::size_t SystemCapabilities::getGitNumberOfHashes() const { return buildInfo_.githashes.size(); }
-
-const std::pair<std::string, std::string>& SystemCapabilities::getGitHash(std::size_t i) const {
-    ivwAssert(i < getGitNumberOfHashes(), "index out of bounds");
-    return buildInfo_.githashes[i];
-}
+const util::BuildInfo& SystemCapabilities::getBuildInfo() const { return buildInfo_; }
 
 bool SystemCapabilities::lookupOSInfo() {
 #ifdef IVW_SIGAR

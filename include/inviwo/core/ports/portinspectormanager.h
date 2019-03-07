@@ -2,7 +2,7 @@
  *
  * Inviwo - Interactive Visualization Workshop
  *
- * Copyright (c) 2017-2018 Inviwo Foundation
+ * Copyright (c) 2017-2019 Inviwo Foundation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -65,13 +65,14 @@ public:
     bool hasPortInspector(Outport* outport) const;
     ProcessorWidget* addPortInspector(Outport* outport, ivec2 pos);
     void removePortInspector(Outport* outport);
-    
+
     std::shared_ptr<const Image> renderPortInspectorImage(Outport* outport);
 
     void clear();
 
     virtual void serialize(Serializer& s) const override;
     virtual void deserialize(Deserializer& d) override;
+
 private:
     using PortInspectorMap = std::map<std::string, std::unique_ptr<PortInspector>>;
 
@@ -81,7 +82,7 @@ private:
     void returnPortInspector(std::unique_ptr<PortInspector>);
 
     static void insertNetwork(PortInspector* portInspector, ProcessorNetwork* network,
-                              Outport* outport);
+                              Outport* outport, bool bidirectionalAutoLinks);
     static void removeNetwork(PortInspector* portInspector, ProcessorNetwork* network);
 
     virtual void onProcessorNetworkWillRemoveProcessor(Processor* processor) override;
@@ -90,11 +91,10 @@ private:
 
     PortInspectorMap portInspectors_;
     std::vector<std::unique_ptr<PortInspector>> unUsedInspectors_;
-    
+
     InviwoApplication* app_;
 };
 
-} // namespace
+}  // namespace inviwo
 
-#endif // IVW_PORTINSPECTORMANAGER_H
-
+#endif  // IVW_PORTINSPECTORMANAGER_H

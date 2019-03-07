@@ -2,7 +2,7 @@
  *
  * Inviwo - Interactive Visualization Workshop
  *
- * Copyright (c) 2018 Inviwo Foundation
+ * Copyright (c) 2018-2019 Inviwo Foundation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -85,13 +85,13 @@ ListProperty::ListProperty(const ListProperty& rhs)
     : CompositeProperty(rhs)
     , uiFlags_(rhs.uiFlags_)
     , maxNumElements_(rhs.maxNumElements_)
-    , prefabs_(std::move(detail::clonePropertyVector(rhs.prefabs_))) {}
+    , prefabs_(detail::clonePropertyVector(rhs.prefabs_)) {}
 
 ListProperty& ListProperty::operator=(const ListProperty& that) {
     if (this != &that) {
         uiFlags_ = that.uiFlags_;
         maxNumElements_ = that.maxNumElements_;
-        prefabs_ = std::move(detail::clonePropertyVector(that.prefabs_));
+        prefabs_ = detail::clonePropertyVector(that.prefabs_);
     }
     return *this;
 }

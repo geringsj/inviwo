@@ -2,7 +2,7 @@
  *
  * Inviwo - Interactive Visualization Workshop
  *
- * Copyright (c) 2012-2018 Inviwo Foundation
+ * Copyright (c) 2012-2019 Inviwo Foundation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -51,14 +51,14 @@ Canvas::Canvas(size2_t dimensions)
     , ownerWidget_(nullptr) {}
 
 void Canvas::resize(size2_t canvasSize) {
-    auto previousScreenDimensions_ = screenDimensions_;
+    auto previousScreenDimensions = screenDimensions_;
     screenDimensions_ = canvasSize;
 
     if (propagator_) {
         NetworkLock lock;
         RenderContext::getPtr()->activateDefaultRenderContext();
         ResizeEvent resizeEvent(screenDimensions_);
-        resizeEvent.setPreviousSize(previousScreenDimensions_);
+        resizeEvent.setPreviousSize(previousScreenDimensions);
         propagator_->propagateEvent(&resizeEvent, nullptr);
     }
 }

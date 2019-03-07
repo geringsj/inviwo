@@ -2,7 +2,7 @@
  *
  * Inviwo - Interactive Visualization Workshop
  *
- * Copyright (c) 2016-2018 Inviwo Foundation
+ * Copyright (c) 2016-2019 Inviwo Foundation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -45,7 +45,7 @@ namespace inviwo {
  *
  * @see TemplateProperty, FileProperty
  */
-class IVW_CORE_API MultiFileProperty : public TemplateProperty<std::vector<std::string> > {
+class IVW_CORE_API MultiFileProperty : public TemplateProperty<std::vector<std::string>> {
 public:
     virtual std::string getClassIdentifier() const override;
     static const std::string classIdentifier;
@@ -97,6 +97,9 @@ public:
     void setContentType(const std::string& contentType);
     std::string getContentType() const;
 
+    const FileExtension& getSelectedExtension() const;
+    void setSelectedExtension(const FileExtension& ext);
+
     /**
      *	Request a file from the user through the use of a widget.
      */
@@ -106,6 +109,7 @@ public:
 
 private:
     std::vector<FileExtension> nameFilters_;
+    FileExtension selectedExtension_;
     AcceptMode acceptMode_;
     FileMode fileMode_;
     std::string contentType_;

@@ -7,13 +7,16 @@ import refactoring # Note: refactoring.py need to be in the current working dire
 
 
 ## NOTE: update copyright year here
-currentYear = 2018
+currentYear = 2019
 
 excludespatterns = ["*/ext/*", "*moc_*", "*/proteindocking/*", "*/proteindocking2/*", 
 					"*/genetree/*", "*.DS_Store", "*DS_mapp", ".md", "*.suo" , "*.h5",
-					"*.jpg", "*.JPG", "*.jpeg", "*.lib", "*.dll", "*.inv",
+					"*.jpg", "*.JPG", "*.jpeg", "*.lib", "*.dll", "*.inv", "*.dat", "*.ivf","*.tiff",
 					"*.png", "*.ttf", "*.tif", "*.pyc", "*.raw", "*.bmp", "*.wav", "*.xcf", "*.ico", "*.icns",
-					"*.qch", "*.qhc", "*.exr", "*.pwm", "*.pvm", "*.pdf", "*.otf", "*.exe", "*.fbx"]
+					"*.qch", "*.qhc", "*.exr", "*.pwm", "*.pvm", "*.pdf", "*.otf", "*.exe", "*.fbx", "*.svg", 
+					"*.itf", "*.qrc", "*.md", "*/.git*", "*/.clang-format", "*/LICENSE", ".git", "Jenkinsfile",
+					".gitattributes",  "*/AUTHORS", "" "*/tools/meta/templates/*", "*.natvis", "*/depends.cmake", 
+					"*moduledefine.h", "*moduledefine.hpp", "*/config.json", "*.js", "*/CMakeLists.txt"]
 
 try:
 	import colorama

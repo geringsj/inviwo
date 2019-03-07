@@ -2,7 +2,7 @@
  *
  * Inviwo - Interactive Visualization Workshop
  *
- * Copyright (c) 2017-2018 Inviwo Foundation
+ * Copyright (c) 2017-2019 Inviwo Foundation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -53,6 +53,13 @@ void StandardEvaluationErrorHandler::operator()(Processor* processor, Evaluation
     } catch (Exception& e) {
         util::log(e.getContext(), id + " Error in " + func + ": " + e.getMessage(),
                   LogLevel::Error);
+
+        if (!e.getStack().empty()) {
+            std::stringstream ss;
+            ss << "Stack Trace:\n";
+            e.getStack(ss);
+            util::log(e.getContext(), ss.str(), LogLevel::Info);
+        }
     } catch (std::exception& e) {
         util::log(context, id + " Error in " + func + ": " + std::string(e.what()),
                   LogLevel::Error);
@@ -61,5 +68,4 @@ void StandardEvaluationErrorHandler::operator()(Processor* processor, Evaluation
     }
 }
 
-} // namespace
-
+}  // namespace inviwo

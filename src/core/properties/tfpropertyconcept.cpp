@@ -2,7 +2,7 @@
  *
  * Inviwo - Interactive Visualization Workshop
  *
- * Copyright (c) 2018 Inviwo Foundation
+ * Copyright (c) 2018-2019 Inviwo Foundation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,6 +41,11 @@ TFPrimitiveSet* TFPropertyModel<TransferFunctionProperty*>::getTFInternal() cons
 template <>
 bool TFPropertyModel<TransferFunctionProperty*>::hasTFInternal() const {
     return true;
+}
+template <>
+TransferFunctionProperty* TFPropertyModel<TransferFunctionProperty*>::getTFPropertyInternal()
+    const {
+    return data_;
 }
 
 // IsoValueProperty
@@ -81,6 +86,10 @@ bool TFPropertyModel<IsoTFProperty*>::hasTFInternal() const {
 template <>
 bool TFPropertyModel<IsoTFProperty*>::hasIsovaluesInternal() const {
     return true;
+}
+template <>
+TransferFunctionProperty* TFPropertyModel<IsoTFProperty*>::getTFPropertyInternal() const {
+    return &data_->tf_;
 }
 
 }  // namespace util

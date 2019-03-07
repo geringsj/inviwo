@@ -2,7 +2,7 @@
  *
  * Inviwo - Interactive Visualization Workshop
  *
- * Copyright (c) 2018 Inviwo Foundation
+ * Copyright (c) 2018-2019 Inviwo Foundation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,20 +31,24 @@
 
 namespace inviwo {
 
-void TFPrimitiveObserver::onTFPrimitiveChange(const TFPrimitive*) {}
+void TFPrimitiveObserver::onTFPrimitiveChange(const TFPrimitive&) {}
 
-TFPrimitive::TFPrimitive(double pos, const vec4& color) : data_({pos, color}) {}
+TFPrimitive::TFPrimitive(double pos, const vec4& color)
+    : Observable<TFPrimitiveObserver>(), data_({pos, color}) {}
 
 // Cannot use default constructors and assignment operator for TFPrimitive!
 //
 // Default constructors would call the base class constructor of Observable and thereby
 // copy all observers. This must be avoided since TFPrimitives are a part of a property
 // and when setting/assigning a property, no observers must be copied!
-TFPrimitive::TFPrimitive(const TFPrimitiveData& data) : data_(data) {}
+TFPrimitive::TFPrimitive(const TFPrimitiveData& data)
+    : Observable<TFPrimitiveObserver>(), data_(data) {}
 
-TFPrimitive::TFPrimitive(const TFPrimitive& rhs) : data_(rhs.data_) {}
+TFPrimitive::TFPrimitive(const TFPrimitive& rhs)
+    : Observable<TFPrimitiveObserver>(), data_(rhs.data_) {}
 
-TFPrimitive::TFPrimitive(TFPrimitive&& rhs) : data_(std::move(rhs.data_)) {}
+TFPrimitive::TFPrimitive(TFPrimitive&& rhs)
+    : Observable<TFPrimitiveObserver>(), data_(std::move(rhs.data_)) {}
 
 TFPrimitive& TFPrimitive::operator=(const TFPrimitive& rhs) {
     if ((this != &rhs) && (*this != rhs)) {
@@ -105,7 +109,7 @@ void TFPrimitive::setColor(const vec4& color) {
 }
 
 void TFPrimitive::notifyTFPrimitiveObservers() {
-    forEachObserver([&](TFPrimitiveObserver* o) { o->onTFPrimitiveChange(this); });
+    forEachObserver([&](TFPrimitiveObserver* o) { o->onTFPrimitiveChange(*this); });
 }
 
 void TFPrimitive::serialize(Serializer& s) const {
@@ -129,7 +133,9 @@ bool operator!=(const TFPrimitiveData& lhs, const TFPrimitiveData& rhs) {
     return !operator==(lhs, rhs);
 }
 
-bool operator<(const TFPrimitiveData& lhs, const TFPrimitiveData& rhs) { return lhs.pos < rhs.pos; }
+bool operator<(const TFPrimitiveData& lhs, const TFPrimitiveData& rhs) {
+    return lhs.pos == rhs.pos ? lhs.color.a < rhs.color.a : lhs.pos < rhs.pos;
+}
 
 bool operator>(const TFPrimitiveData& lhs, const TFPrimitiveData& rhs) { return rhs < lhs; }
 

@@ -2,7 +2,7 @@
  *
  * Inviwo - Interactive Visualization Workshop
  *
- * Copyright (c) 2012-2018 Inviwo Foundation
+ * Copyright (c) 2012-2019 Inviwo Foundation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,7 +35,7 @@
 #include <inviwo/core/datastructures/camera.h>
 
 namespace inviwo {
-
+// clang-format off
 /**
  * This file is auto generated using tools/codegen/coordinatetransforms.nb
  *
@@ -620,6 +620,18 @@ public:
      */
     virtual const Matrix<N+1, float> getWorldToIndexMatrix() const = 0;
 };
+
+
+// https://docs.microsoft.com/en-us/cpp/cpp/general-rules-and-limitations?view=vs-2017
+extern template class IVW_CORE_TMPL_EXP SpatialCoordinateTransformer<2>;
+extern template class IVW_CORE_TMPL_EXP SpatialCoordinateTransformer<3>;
+extern template class IVW_CORE_TMPL_EXP SpatialCameraCoordinateTransformer<2>;
+extern template class IVW_CORE_TMPL_EXP SpatialCameraCoordinateTransformer<3>;
+
+extern template class IVW_CORE_TMPL_EXP StructuredCoordinateTransformer<2>;
+extern template class IVW_CORE_TMPL_EXP StructuredCoordinateTransformer<3>;
+extern template class IVW_CORE_TMPL_EXP StructuredCameraCoordinateTransformer<2>;
+extern template class IVW_CORE_TMPL_EXP StructuredCameraCoordinateTransformer<3>;
 
 #include <warn/push>
 #include <warn/ignore/switch-enum>
@@ -1687,8 +1699,8 @@ template <unsigned int N>
 const Matrix<N+1, float> StructuredCameraCoordinateTransformerImpl<N>::getWorldToViewMatrix() const {
     return getViewMatrix();
 }
+// clang-format on
 
+}  // namespace inviwo
 
-} // namespace
-
-#endif // IVW_COORDINATETRANSFORMER_H
+#endif  // IVW_COORDINATETRANSFORMER_H
