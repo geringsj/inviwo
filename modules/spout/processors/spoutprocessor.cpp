@@ -68,7 +68,6 @@ Spout::Spout()
 
     senderName_.onChange([this]() { nameChanged(); });
 
-	dimensions_.setSerializationMode(PropertySerializationMode::None);
     dimensions_.onChange([this]() { sizeChanged(); });
     inputSize_.addProperty(dimensions_);
 
