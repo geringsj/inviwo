@@ -85,8 +85,6 @@ private:
 
 	void receiveZMQ();
     void parseMessage(json content, std::string address);
-    vec3 convertPosition(vec3 cartesian);
-    vec3 convertTo(vec3 cartesian, vec3 forward);
     std::thread thread_;
 
     zmq::context_t ctx_;
