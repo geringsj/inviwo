@@ -139,20 +139,4 @@ void Zmq::parseMessage(json content, std::string address) {
     cameraRTo_.set(fromR + toR);
     cameraRUp_.set(upR);
 }
-
-vec3 Zmq::convertPosition(vec3 cartesian) {
-    float r = sqrt(pow(cartesian.x, 2.0) + pow(cartesian.y, 2.0) + pow(cartesian.z, 2.0));
-    float phi = acos(cartesian.z / r);
-    float theta = atan(cartesian.y / cartesian.x);
-    vec3 spherical = vec3(r, phi, theta);
-    if (cartesian.x <= 0) {
-        spherical.y = M_PI + spherical.y;
-    } else {
-        spherical.y = M_PI - spherical.y;
-    }
-    float x = spherical.x * sin(spherical.y) * cos(spherical.z);
-    float y = spherical.x * sin(spherical.y) * sin(spherical.z);
-    float z = spherical.x * cos(spherical.y);
-    return (vec3(x, y, z));
-}
 }  // namespace inviwo
