@@ -2,7 +2,7 @@
  *
  * Inviwo - Interactive Visualization Workshop
  *
- * Copyright (c) 2016-2018 Inviwo Foundation
+ * Copyright (c) 2016-2019 Inviwo Foundation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -53,11 +53,11 @@ UndoManager::UndoManager(InviwoMainWindow *mainWindow)
     mainWindow_->getInviwoApplicationQt()->setUndoTrigger([this]() { pushStateIfDirty(); });
     mainWindow_->getInviwoApplication()->getProcessorNetwork()->addObserver(this);
 
-    undoAction_ = new QAction(QIcon(":/icons/undo.png"), QAction::tr("&Undo"), mainWindow_);
+    undoAction_ = new QAction(QIcon(":/svgicons/undo.svg"), QAction::tr("&Undo"), mainWindow_);
     undoAction_->setShortcut(QKeySequence::Undo);
     undoAction_->connect(undoAction_, &QAction::triggered, this, [&]() { undoState(); });
 
-    redoAction_ = new QAction(QIcon(":/icons/redo.png"), QAction::tr("&Redo"), mainWindow_);
+    redoAction_ = new QAction(QIcon(":/svgicons/redo.svg"), QAction::tr("&Redo"), mainWindow_);
     redoAction_->setShortcut(QKeySequence::Redo);
     redoAction_->connect(redoAction_, &QAction::triggered, this, [&]() { redoState(); });
 
@@ -84,8 +84,13 @@ void UndoManager::pushState() {
     if (isRestoring) return;
 
     std::stringstream stream;
-    manager_->save(stream, refPath_);
-    auto str = stream.str();
+    try {
+        manager_->save(stream, refPath_, [](ExceptionContext context) -> void { throw; },
+                       WorkspaceSaveMode::Undo);
+    } catch (...) {
+        return;
+    }
+    auto str = std::move(stream).str();
 
     dirty_ = false;
     if (head_ >= 0 && str == undoBuffer_[head_]) return;  // No Change

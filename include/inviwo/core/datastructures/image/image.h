@@ -2,7 +2,7 @@
  *
  * Inviwo - Interactive Visualization Workshop
  *
- * Copyright (c) 2012-2018 Inviwo Foundation
+ * Copyright (c) 2012-2019 Inviwo Foundation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,11 +37,13 @@
 #include <inviwo/core/datastructures/image/imagerepresentation.h>
 #include <inviwo/core/metadata/metadataowner.h>
 #include <inviwo/core/util/document.h>
+#include <inviwo/core/io/datareader.h>
+#include <inviwo/core/io/datawriter.h>
 
 namespace inviwo {
 
 /**
- * \ingroup datastructures	
+ * \ingroup datastructures
  */
 class IVW_CORE_API Image : public DataGroup<Image, ImageRepresentation>, public MetaDataOwner {
 public:
@@ -82,7 +84,8 @@ public:
      * \brief encode the requested layer contents to a buffer considering the given image extension
      * @param layerType Indicate which type of layer to return. see LayerType
      * @param fileExtension file extension of the requested image format
-     * @param idx In case of layerType beging LayerType::ColorLayer, than return color layer at index idx
+     * @param idx In case of layerType being LayerType::ColorLayer, than return color layer at
+     * index idx
      * @return encoded layer contents as std::vector
      */
     DataBuffer getLayerAsCodedBuffer(LayerType layerType, const std::string& fileExtension,
@@ -121,6 +124,10 @@ protected:
     std::shared_ptr<Layer> pickingLayer_;
 };
 
-}  // namespace
+// https://docs.microsoft.com/en-us/cpp/cpp/general-rules-and-limitations?view=vs-2017
+extern template class IVW_CORE_TMPL_EXP DataReaderType<Image>;
+extern template class IVW_CORE_TMPL_EXP DataWriterType<Image>;
+
+}  // namespace inviwo
 
 #endif  // IVW_IMAGE_H

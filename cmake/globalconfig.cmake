@@ -2,7 +2,7 @@
 #
 # Inviwo - Interactive Visualization Workshop
 #
-# Copyright (c) 2013-2018 Inviwo Foundation
+# Copyright (c) 2013-2019 Inviwo Foundation
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -40,6 +40,7 @@ endif()
 
 #--------------------------------------------------------------------
 # Requirement checks
+include(CheckCXXCompilerFlag)
 if(MSVC) 
     if(MSVC_VERSION LESS 1900)
         message(FATAL_ERROR "Inviwo requires C++14 features. " 
@@ -47,21 +48,28 @@ if(MSVC)
                 "The latest Visual Studio version is available at "
                 "https://www.visualstudio.com/en-us/downloads/download-visual-studio-vs.aspx")
     endif()
+    CHECK_CXX_COMPILER_FLAG("/std:c++14" compiler_supports_cxx14)
+    CHECK_CXX_COMPILER_FLAG("/std:c++17" compiler_supports_cxx17)
 else()
-    include(CheckCXXCompilerFlag)
-    CHECK_CXX_COMPILER_FLAG("-std=c++14" COMPILER_SUPPORTS_CXX14)
-    if(COMPILER_SUPPORTS_CXX14)
-        set(CMAKE_CXX_STANDARD 14)
-        set(CMAKE_CXX_STANDARD_REQUIRED ON)
-        set(CMAKE_CXX_EXTENSIONS OFF)
-    else()
-        message(FATAL_ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++14 support. "
-                "Please use a different C++ compiler.")
-    endif()
+    CHECK_CXX_COMPILER_FLAG("-std=c++14" compiler_supports_cxx14)
+    CHECK_CXX_COMPILER_FLAG("-std=c++17" compiler_supports_cxx17)
 endif()
+if(compiler_supports_cxx17)
+    message(STATUS "C++17 enabled")
+    set(CMAKE_CXX_STANDARD 17 CACHE STRING "C++ ISO Standard" FORCE)
+elseif(compiler_supports_cxx14)
+    message(STATUS "C++14 enabled")
+    set(CMAKE_CXX_STANDARD 14 CACHE STRING "C++ ISO Standard" FORCE) 
+else()
+    message(FATAL_ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++14 support. "
+            "Please use a different C++ compiler.")
+endif()
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
-    message(WARNING "Inviwo is only supported for 64-bit architectures.")
+    message(FATAL_ERROR "Inviwo is only supported for 64-bit architectures. Resolve the error by deleting "
+	        "the cache (File->Delete Cache) and selecting 64-bit architecture when configuring.")
 endif()
 
 set_property(GLOBAL PROPERTY USE_FOLDERS On)
@@ -140,6 +148,7 @@ set(IVW_APPLICATION_DIR         ${IVW_ROOT_DIR}/apps)
 set(IVW_MODULE_DIR              ${IVW_ROOT_DIR}/modules)
 set(IVW_RESOURCES_DIR           ${IVW_ROOT_DIR}/resources)
 set(IVW_EXTENSIONS_DIR          ${IVW_ROOT_DIR}/ext)
+set(IVW_TOOLS_DIR               ${IVW_ROOT_DIR}/tools)
 set(IVW_BINARY_DIR              ${CMAKE_BINARY_DIR})
 set(IVW_LIBRARY_DIR             ${LIBRARY_OUTPUT_PATH})
 set(IVW_EXECUTABLE_DIR          ${EXECUTABLE_OUTPUT_PATH})
@@ -153,13 +162,14 @@ include(${CMAKE_CURRENT_LIST_DIR}/globalutils.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/compileoptions.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/installutils.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/deprecated.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/filegeneration.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/globalmacros.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/licenses.cmake)
 
 #Generate headers
 ivw_generate_module_paths_header()
 configure_file(${IVW_CMAKE_TEMPLATES}/inviwocommondefines_template.h 
-               ${CMAKE_BINARY_DIR}/modules/_generated/inviwocommondefines.h 
+               ${CMAKE_BINARY_DIR}/modules/core/include/inviwo/core/inviwocommondefines.h 
                @ONLY IMMEDIATE)
 
 #--------------------------------------------------------------------
@@ -298,8 +308,22 @@ endif()
 
 #--------------------------------------------------------------------
 # force colors when using clang and ninja https://github.com/ninja-build/ninja/wiki/FAQ
-if (${CMAKE_GENERATOR} STREQUAL "Ninja" AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    add_compile_options(-fcolor-diagnostics)
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR
+    "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR
+    "${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
+    if (${CMAKE_GENERATOR} STREQUAL "Ninja")
+        option (IVW_FORCE_COLORED_OUTPUT "Always produce ANSI-colored output (GNU/Clang only)." ON)
+    else()
+        option (IVW_FORCE_COLORED_OUTPUT "Always produce ANSI-colored output (GNU/Clang only)." OFF)
+    endif()
+    if (IVW_FORCE_COLORED_OUTPUT)
+        if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+            add_compile_options (-fdiagnostics-color=always)
+        elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR
+            "${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
+            add_compile_options (-fcolor-diagnostics)
+        endif()
+    endif()
 endif()
 
 #--------------------------------------------------------------------

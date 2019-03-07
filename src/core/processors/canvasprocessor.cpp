@@ -2,7 +2,7 @@
  *
  * Inviwo - Interactive Visualization Workshop
  *
- * Copyright (c) 2012-2018 Inviwo Foundation
+ * Copyright (c) 2012-2019 Inviwo Foundation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -72,14 +72,14 @@ CanvasProcessor::CanvasProcessor()
     , inputSize_("inputSize", "Input Dimension Parameters")
     , fullScreen_("fullscreen", "Toggle Full Screen", false)
     , fullScreenEvent_("fullscreenEvent", "FullScreen",
-                       [this](Event*) { fullScreen_.set(!fullScreen_); },
-                  IvwKey::F, KeyState::Press, KeyModifier::Shift)
+                       [this](Event*) { fullScreen_.set(!fullScreen_); }, IvwKey::F,
+                       KeyState::Press, KeyModifier::Shift)
     , saveLayerEvent_("saveLayerEvent", "Save Image Layer", [this](Event*) { saveImageLayer(); },
                       IvwKey::Undefined, KeyState::Press)
     , allowContextMenu_("allowContextMenu", "Allow Context Menu", true)
     , previousImageSize_(customInputDimensions_)
-    , widgetMetaData_{createMetaData<ProcessorWidgetMetaData>(
-          ProcessorWidgetMetaData::CLASS_IDENTIFIER)} {
+    , widgetMetaData_{
+          createMetaData<ProcessorWidgetMetaData>(ProcessorWidgetMetaData::CLASS_IDENTIFIER)} {
     widgetMetaData_->addObserver(this);
 
     setEvaluateWhenHidden(false);
@@ -156,8 +156,8 @@ CanvasProcessor::CanvasProcessor()
     });
 
     addProperty(fullScreen_);
-    fullScreen_.onChange([this]() { 
-		if (auto c = getCanvas()) {
+    fullScreen_.onChange([this]() {
+        if (auto c = getCanvas()) {
             c->setFullScreen(fullScreen_.get());
         }
     });
@@ -188,7 +188,7 @@ void CanvasProcessor::setProcessorWidget(std::unique_ptr<ProcessorWidget> proces
         throw Exception("Expected CanvasProcessorWidget in CanvasProcessor::setProcessorWidget");
     }
     Processor::setProcessorWidget(std::move(processorWidget));
-	// Widget may be set after deserialization
+    // Widget may be set after deserialization
     if (auto c = getCanvas()) {
         c->setFullScreen(fullScreen_.get());
     }

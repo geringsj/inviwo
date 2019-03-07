@@ -2,7 +2,7 @@
  *
  * Inviwo - Interactive Visualization Workshop
  *
- * Copyright (c) 2015-2018 Inviwo Foundation
+ * Copyright (c) 2015-2019 Inviwo Foundation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,4 +31,13 @@
 
 namespace inviwo {
 
-}  // namespace
+template class IVW_CORE_TMPL_INST Spatial4DSampler<1, double>;
+template class IVW_CORE_TMPL_INST Spatial4DSampler<1, float>;
+template class IVW_CORE_TMPL_INST Spatial4DSampler<2, double>;
+template class IVW_CORE_TMPL_INST Spatial4DSampler<2, float>;
+template class IVW_CORE_TMPL_INST Spatial4DSampler<3, double>;
+template class IVW_CORE_TMPL_INST Spatial4DSampler<3, float>;
+template class IVW_CORE_TMPL_INST Spatial4DSampler<4, double>;
+template class IVW_CORE_TMPL_INST Spatial4DSampler<4, float>;
+
+}  // namespace inviwo

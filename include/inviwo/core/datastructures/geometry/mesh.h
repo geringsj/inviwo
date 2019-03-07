@@ -2,7 +2,7 @@
  *
  * Inviwo - Interactive Visualization Workshop
  *
- * Copyright (c) 2013-2018 Inviwo Foundation
+ * Copyright (c) 2013-2019 Inviwo Foundation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,6 +40,8 @@
 #include <inviwo/core/metadata/metadataowner.h>
 #include <inviwo/core/util/document.h>
 #include <utility>
+#include <inviwo/core/io/datareader.h>
+#include <inviwo/core/io/datawriter.h>
 
 namespace inviwo {
 
@@ -169,6 +171,18 @@ public:
     BufferInfo getBufferInfo(size_t idx) const;
     const IndexBuffer* getIndices(size_t idx) const;
 
+    /**
+     * Try and find a buffer of the given BufferType.
+     * Returns the buffer and its location.
+     * If no buffer is found the buffer will be a nullptr.
+     */
+    std::pair<const BufferBase*, int> findBuffer(BufferType type) const;
+
+    /**
+     * Check if there exits a buffer of BufferType type in the mesh.
+     */
+    bool hasBuffer(BufferType type) const;
+
     BufferBase* getBuffer(size_t idx);
     IndexBuffer* getIndices(size_t idx);
 
@@ -227,6 +241,10 @@ IVW_CORE_API bool hasPickIDBuffer(const Mesh* mesh);
 IVW_CORE_API bool hasRadiiBuffer(const Mesh* mesh);
 
 }  // namespace meshutil
+
+// https://docs.microsoft.com/en-us/cpp/cpp/general-rules-and-limitations?view=vs-2017
+extern template class IVW_CORE_TMPL_EXP DataReaderType<Mesh>;
+extern template class IVW_CORE_TMPL_EXP DataWriterType<Mesh>;
 
 }  // namespace inviwo
 

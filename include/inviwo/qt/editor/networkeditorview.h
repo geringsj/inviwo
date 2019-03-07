@@ -2,7 +2,7 @@
  *
  * Inviwo - Interactive Visualization Workshop
  *
- * Copyright (c) 2012-2018 Inviwo Foundation
+ * Copyright (c) 2012-2019 Inviwo Foundation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,6 +37,7 @@
 #include <warn/push>
 #include <warn/ignore/all>
 #include <QGraphicsView>
+#include <QImage>
 #include <warn/pop>
 
 class QDropEvent;
@@ -46,9 +47,10 @@ namespace inviwo {
 
 class InviwoMainWindow;
 class MenuItem;
+class NetworkSearch;
+class TextLabelOverlay;
 
 class IVW_QTEDITOR_API NetworkEditorView : public QGraphicsView, public NetworkEditorObserver {
-
 public:
     NetworkEditorView(NetworkEditor* networkEditor, InviwoMainWindow* parent = nullptr);
     ~NetworkEditorView();
@@ -58,6 +60,10 @@ public:
     virtual void onNetworkEditorFileChanged(const std::string& newFilename) override;
 
     void exportViewToFile(const QString& filename, bool entireScene, bool backgroundVisible);
+    QImage exportViewToImage(bool entireScene, bool backgroundVisible, QSize size = QSize());
+
+    TextLabelOverlay& getOverlay() const;
+    NetworkSearch& getNetworkSearch() const;
 
 protected:
     virtual void mouseDoubleClickEvent(QMouseEvent* e) override;
@@ -73,7 +79,10 @@ private:
     virtual void onSceneSizeChanged() override;
 
     InviwoMainWindow* mainwindow_;
-    NetworkEditor* networkEditor_;
+    NetworkEditor* editor_;
+    NetworkSearch* search_;
+    TextLabelOverlay* overlay_;
+
     ivec2 scrollPos_;
     WorkspaceManager::DeserializationHandle loadHandle_;
     WorkspaceManager::ClearHandle clearHandle_;

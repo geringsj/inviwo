@@ -2,7 +2,7 @@
  *
  * Inviwo - Interactive Visualization Workshop
  *
- * Copyright (c) 2013-2018 Inviwo Foundation
+ * Copyright (c) 2013-2019 Inviwo Foundation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -81,25 +81,13 @@ public:
 
     int numberOfCores() const;
 
-    virtual bool canAllocate(glm::u64 dataSize, glm::u8 percentageOfAvailableMemory = 100) override;
-    virtual uvec3 calculateOptimalBrickSize(uvec3 dimensions, size_t formatSizeInBytes,
-                                            glm::u8 percentageOfAvailableMemory = 100) override;
-
     glm::u64 getAvailableMemory();
     glm::u64 getCurrentResidentMemoryUsage();
 
     virtual void retrieveStaticInfo() override;
     virtual void retrieveDynamicInfo() override;
 
-    std::string getBuildDateString() const;
-    int getBuildTimeYear() const;
-    int getBuildTimeMonth() const;
-    int getBuildTimeDay() const;
-    int getBuildTimeHour() const;
-    int getBuildTimeMinute() const;
-    int getBuildTimeSecond() const;
-    std::size_t getGitNumberOfHashes() const;
-    const std::pair<std::string, std::string>& getGitHash(std::size_t i) const;
+    const util::BuildInfo& getBuildInfo() const;
 
 private:
     bool lookupOSInfo();

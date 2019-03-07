@@ -2,7 +2,7 @@
  *
  * Inviwo - Interactive Visualization Workshop
  *
- * Copyright (c) 2013-2018 Inviwo Foundation
+ * Copyright (c) 2013-2019 Inviwo Foundation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,12 +38,12 @@
 #include <inviwo/core/common/coremodulesharedlibrary.h>
 #include <modules/python3/python3modulesharedlibrary.h>
 
+#include <inviwo/testutil/configurablegtesteventlistener.h>
+
 #include <warn/push>
 #include <warn/ignore/all>
 #include <gtest/gtest.h>
 #include <warn/pop>
-
-
 
 using namespace inviwo;
 
@@ -51,13 +51,13 @@ int main(int argc, char** argv) {
 
     LogCentral::init();
     auto logger = std::make_shared<ConsoleLogger>();
-    LogCentral::getPtr()->setLogLevel(LogLevel::Error);
+    LogCentral::getPtr()->setVerbosity(LogVerbosity::Error);
     LogCentral::getPtr()->registerLogger(logger);
     InviwoApplication app(argc, argv, "Inviwo-Unittests-Python");
 
     {
         std::vector<std::unique_ptr<InviwoModuleFactoryObject>> modules;
-        modules.emplace_back(createCoreModule());
+        modules.emplace_back(createInviwoCore());
         modules.emplace_back(createPython3Module());
         app.registerModules(std::move(modules));
     }
@@ -74,6 +74,7 @@ int main(int argc, char** argv) {
 #else
         ::testing::InitGoogleTest(&argc, argv);
 #endif
+        ConfigurableGTestEventListener::setup();
         ret = RUN_ALL_TESTS();
     }
 

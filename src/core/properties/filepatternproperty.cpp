@@ -2,7 +2,7 @@
  *
  * Inviwo - Interactive Visualization Workshop
  *
- * Copyright (c) 2013-2018 Inviwo Foundation
+ * Copyright (c) 2013-2019 Inviwo Foundation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -185,6 +185,14 @@ int FilePatternProperty::getMinRange() const { return minIndex_.get(); }
 
 int FilePatternProperty::getMaxRange() const { return maxIndex_.get(); }
 
+const FileExtension& FilePatternProperty::getSelectedExtension() const {
+    return pattern_.getSelectedExtension();
+}
+
+void FilePatternProperty::setSelectedExtension(const FileExtension& ext) {
+    pattern_.setSelectedExtension(ext);
+}
+
 void FilePatternProperty::updateFileList() {
     files_.clear();
     outOfRangeMatches_ = false;
@@ -206,9 +214,8 @@ void FilePatternProperty::updateFileList() {
 
             if (!hasWildcard) {
                 // look for exact match
-                std::string filename = filePath + '/' + pattern;
-                if (filesystem::fileExists(filename)) {
-                    files_.push_back(std::make_tuple(-1, filename));
+                if (util::contains(fileList, pattern)) {
+                    files_.push_back(std::make_tuple(-1, item));
                 }
             } else if (hasDigits) {
                 ivec2 indexRange{-1, std::numeric_limits<int>::max()};
@@ -293,6 +300,8 @@ std::string FilePatternProperty::guessFilePattern() const {
     LogError("not implemented yet");
     return "";
 }
+
+void FilePatternProperty::clearNameFilters() { pattern_.clearNameFilters(); }
 
 void FilePatternProperty::addNameFilter(std::string filter) { pattern_.addNameFilter(filter); }
 

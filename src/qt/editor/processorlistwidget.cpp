@@ -2,7 +2,7 @@
  *
  * Inviwo - Interactive Visualization Workshop
  *
- * Copyright (c) 2012-2018 Inviwo Foundation
+ * Copyright (c) 2012-2019 Inviwo Foundation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,6 +37,7 @@
 #include <inviwo/core/common/inviwomodule.h>
 #include <inviwo/core/util/document.h>
 #include <inviwo/core/util/rendercontext.h>
+#include <inviwo/core/network/autolinker.h>
 #include <modules/qtwidgets/inviwoqtutils.h>
 #include <inviwo/core/metadata/processormetadata.h>
 #include <inviwo/qt/editor/processorpreview.h>
@@ -89,7 +90,50 @@ void ProcessorTree::mouseMoveEvent(QMouseEvent* e) {
 }
 
 ProcessorTree::ProcessorTree(ProcessorTreeWidget* parent)
-    : QTreeWidget(parent), processorTreeWidget_{parent} {}
+    : QTreeWidget(parent), processorTreeWidget_{parent} {
+    setContextMenuPolicy(Qt::CustomContextMenu);
+
+    QObject::connect(this, &QTreeWidget::customContextMenuRequested, this,
+                     &ProcessorTree::showContextMenu);
+}
+
+void ProcessorTree::showContextMenu(const QPoint& p) {
+    auto item = itemAt(p);
+    const auto id =
+        (item == nullptr) ? QString() : item->data(0, ProcessorTree::identifierRole).toString();
+    const bool enableExpandCollapse =
+        ((processorTreeWidget_->getGrouping() != ProcessorTreeWidget::Grouping::LastUsed) &&
+         (processorTreeWidget_->getGrouping() != ProcessorTreeWidget::Grouping::MostUsed));
+
+    QMenu menu(this);
+    auto addItem = menu.addAction("&Add Processor");
+    addItem->setEnabled(!id.isEmpty());
+    QObject::connect(addItem, &QAction::triggered, this,
+                     [&, id]() { processorTreeWidget_->addProcessor(id); });
+
+    menu.addSeparator();
+
+    auto expand = menu.addAction("&Expand All Categories");
+    expand->setEnabled(enableExpandCollapse);
+    QObject::connect(expand, &QAction::triggered, this, [&]() { expandAll(); });
+
+    auto collapseExceptItem = menu.addAction("C&ollapse Others");
+    collapseExceptItem->setEnabled((item != nullptr) && enableExpandCollapse);
+    // figure out top-level tree item, i.e. category
+    while (item && item->parent()) {
+        item = item->parent();
+    }
+    QObject::connect(collapseExceptItem, &QAction::triggered, this, [&, item]() {
+        collapseAll();
+        expandItem(item);
+    });
+
+    auto collapse = menu.addAction("&Collapse All Categories");
+    collapse->setEnabled(enableExpandCollapse);
+    QObject::connect(collapse, &QAction::triggered, this, [&]() { collapseAll(); });
+
+    menu.exec(mapToGlobal(p));
+}
 
 ProcessorTreeWidget::ProcessorTreeWidget(InviwoMainWindow* parent, HelpWidget* helpWidget)
     : InviwoDockWidget(tr("Processors"), parent, "ProcessorTreeWidget")
@@ -97,12 +141,13 @@ ProcessorTreeWidget::ProcessorTreeWidget(InviwoMainWindow* parent, HelpWidget* h
     , helpWidget_{helpWidget} {
 
     setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
-    resize(QSize(400, 700));  // default size
+    resize(utilqt::emToPx(this, QSizeF(50, 80)));  // default size
 
     QWidget* centralWidget = new QWidget();
     QVBoxLayout* vLayout = new QVBoxLayout(centralWidget);
-    vLayout->setSpacing(7);
-    vLayout->setContentsMargins(7, 7, 7, 7);
+    const auto space = utilqt::refSpacePx(this);
+    vLayout->setSpacing(space);
+    vLayout->setContentsMargins(space, space, space, space);
     lineEdit_ = new QLineEdit(centralWidget);
     lineEdit_->setPlaceholderText("Filter processor list...");
     lineEdit_->setClearButtonEnabled(true);
@@ -112,12 +157,12 @@ ProcessorTreeWidget::ProcessorTreeWidget(InviwoMainWindow* parent, HelpWidget* h
     QHBoxLayout* listViewLayout = new QHBoxLayout();
     listViewLayout->addWidget(new QLabel("Group by", centralWidget));
     listView_ = new QComboBox(centralWidget);
-    listView_->addItem("Alphabet");
-    listView_->addItem("Category");
-    listView_->addItem("Code State");
-    listView_->addItem("Module");
-    listView_->addItem("Last Used");
-    listView_->addItem("Most Used");
+    listView_->addItem("Alphabet", QVariant::fromValue(Grouping::Alphabetical));
+    listView_->addItem("Category", QVariant::fromValue(Grouping::Categorical));
+    listView_->addItem("Code State", QVariant::fromValue(Grouping::CodeState));
+    listView_->addItem("Module", QVariant::fromValue(Grouping::Module));
+    listView_->addItem("Last Used", QVariant::fromValue(Grouping::LastUsed));
+    listView_->addItem("Most Used", QVariant::fromValue(Grouping::MostUsed));
     listView_->setCurrentIndex(1);
     connect(listView_, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this,
             [this]() { addProcessorsToTree(); });
@@ -125,20 +170,20 @@ ProcessorTreeWidget::ProcessorTreeWidget(InviwoMainWindow* parent, HelpWidget* h
     listViewLayout->addWidget(listView_);
     vLayout->addLayout(listViewLayout);
 
-    iconStable_ = QIcon(":/icons/processor_stable.png");
-    iconExperimental_ = QIcon(":/icons/processor_experimental.png");
-    iconBroken_ = QIcon(":/icons/processor_broken.png");
-    iconDeprecated_ = QIcon(":/icons/processor_deprecated.png");
+    iconStable_ = QIcon(":/svgicons/processor-stable.svg");
+    iconExperimental_ = QIcon(":/svgicons/processor-experimental.svg");
+    iconBroken_ = QIcon(":/svgicons/processor-broken.svg");
+    iconDeprecated_ = QIcon(":/svgicons/processor-deprecated.svg");
 
     processorTree_ = new ProcessorTree(this);
     processorTree_->setHeaderHidden(true);
     processorTree_->setColumnCount(2);
-    processorTree_->setIndentation(10);
+    processorTree_->setIndentation(utilqt::emToPx(this, 1.0));
     processorTree_->setAnimated(true);
     processorTree_->header()->setStretchLastSection(false);
     processorTree_->header()->setSectionResizeMode(0, QHeaderView::Stretch);
     processorTree_->header()->setSectionResizeMode(1, QHeaderView::Fixed);
-    processorTree_->header()->setDefaultSectionSize(40);
+    processorTree_->header()->setDefaultSectionSize(utilqt::emToPx(this, 4.0));
 
     connect(processorTree_, &ProcessorTree::currentItemChanged, this,
             &ProcessorTreeWidget::currentItemChanged);
@@ -229,6 +274,10 @@ std::unique_ptr<Processor> ProcessorTreeWidget::createProcessor(QString cid) {
     return nullptr;
 }
 
+auto ProcessorTreeWidget::getGrouping() const -> Grouping {
+    return listView_->currentData().value<Grouping>();
+}
+
 void ProcessorTreeWidget::addProcessor(QString className) {
     // create processor, add it to processor network, and generate it's widgets
     auto network = app_->getProcessorNetwork();
@@ -238,7 +287,7 @@ void ProcessorTreeWidget::addProcessor(QString className) {
         meta->setPosition(ivec2{bb.first.x, bb.second.y} + ivec2(0, 75));
 
         auto p = network->addProcessor(std::move(processor));
-        util::autoLinkProcessor(network, p);
+        AutoLinker::addLinks(network, p);
     }
 }
 
@@ -321,7 +370,7 @@ void ProcessorTreeWidget::addProcessorsToTree(ProcessorFactoryObject* item) {
     processorTree_->clear();
     // add processors from all modules to the list
 
-    if (listView_->currentIndex() == 2) {
+    if (listView_->currentData().value<Grouping>() == Grouping::CodeState) {
         addToplevelItemTo("Stable Processors", "");
         addToplevelItemTo("Experimental Processors", "");
         addToplevelItemTo("Broken Processors", "");
@@ -341,8 +390,8 @@ void ProcessorTreeWidget::addProcessorsToTree(ProcessorFactoryObject* item) {
     }
 
     // Apply sorting
-    switch (listView_->currentIndex()) {
-        case 2: {  // By Code State
+    switch (listView_->currentData().value<Grouping>()) {
+        case Grouping::CodeState: {  // By Code State
             int i = 0;
             while (i < processorTree_->topLevelItemCount()) {
                 auto widget = processorTree_->topLevelItem(i);
@@ -371,24 +420,24 @@ void ProcessorTreeWidget::extractInfoAndAddProcessor(ProcessorFactoryObject* pro
     QList<QVariant> sortVal;
     sortVal.append(QString::fromStdString(processor->getDisplayName()));
 
-    switch (listView_->currentIndex()) {
-        case 0:  // By Alphabet
+    switch (listView_->currentData().value<Grouping>()) {
+        case Grouping::Alphabetical:
             categoryName = processor->getDisplayName().substr(0, 1);
             categoryDesc = "";
             break;
-        case 1:  // By Category
+        case Grouping::Categorical:
             categoryName = processor->getCategory();
             categoryDesc = "";
             break;
-        case 2:  // By Code State
+        case Grouping::CodeState:
             categoryName = toString(processor->getCodeState());
             categoryDesc = "";
             break;
-        case 3:  // By Module
+        case Grouping::Module:
             categoryName = elem ? elem->getIdentifier() : "Unkonwn";
             categoryDesc = elem ? elem->getDescription() : "";
             break;
-        case 4: {  // Last Used
+        case Grouping::LastUsed: {
             auto it = useTimes_.find(processor->getClassIdentifier());
             if (it != useTimes_.end()) {
                 sortVal.prepend(QVariant::fromValue<qint64>(-it->second));
@@ -399,7 +448,7 @@ void ProcessorTreeWidget::extractInfoAndAddProcessor(ProcessorFactoryObject* pro
             categoryDesc = "";
             break;
         }
-        case 5: {  // Most Used
+        case Grouping::MostUsed: {
             auto it = useCounts_.find(processor->getClassIdentifier());
             if (it != useCounts_.end()) {
                 sortVal.prepend(QVariant::fromValue<qint64>(-static_cast<qint64>(it->second)));
@@ -515,20 +564,6 @@ ProcessorDragObject::ProcessorDragObject(QWidget* source, std::unique_ptr<Proces
     setMimeData(mime);
     setHotSpot(QPoint(img.width() / 2, img.height() / 2));
     start(Qt::MoveAction);
-}
-
-bool ProcessorDragObject::canDecode(const QMimeData* mimeData) {
-    return mimeData->hasFormat(mimeType);
-}
-
-bool ProcessorDragObject::decode(const QMimeData* mimeData, QString& className) {
-    QByteArray byteData = mimeData->data(mimeType);
-
-    if (byteData.isEmpty()) return false;
-
-    QDataStream ds(&byteData, QIODevice::ReadOnly);
-    ds >> className;
-    return true;
 }
 
 bool ProcessorTreeItem::operator<(const QTreeWidgetItem& other) const {

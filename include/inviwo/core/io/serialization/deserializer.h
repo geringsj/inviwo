@@ -2,7 +2,7 @@
  *
  * Inviwo - Interactive Visualization Workshop
  *
- * Copyright (c) 2012-2018 Inviwo Foundation
+ * Copyright (c) 2012-2019 Inviwo Foundation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,6 +33,7 @@
 #include <inviwo/core/io/serialization/serializebase.h>
 #include <inviwo/core/util/exception.h>
 #include <inviwo/core/util/stdextensions.h>
+#include <inviwo/core/util/logfilter.h>
 #include <inviwo/core/util/stringconversion.h>
 #include <inviwo/core/io/serialization/nodedebugger.h>
 
@@ -52,7 +53,7 @@ class FactoryBase;
 template <typename T, typename K>
 class ContainerWrapper;
 
-class IVW_CORE_API Deserializer : public SerializeBase {
+class IVW_CORE_API Deserializer : public SerializeBase, public LogFilter {
 public:
     /**
      * \brief Deserializer constructor
@@ -111,6 +112,10 @@ public:
 
     template <typename T>
     void deserialize(const std::string& key, std::vector<T>& sVector,
+                     const std::string& itemKey = "item");
+
+    template <typename T>
+    void deserialize(const std::string& key, std::unordered_set<T>& sSet,
                      const std::string& itemKey = "item");
 
     template <typename T>
@@ -870,6 +875,29 @@ void Deserializer::deserialize(const std::string& key, std::vector<T>& vector,
             handleError(IvwContext);
         }
         i++;
+    }
+}
+
+template <typename T>
+void Deserializer::deserialize(const std::string& key, std::unordered_set<T>& set,
+                               const std::string& itemKey) {
+    NodeSwitch vectorNodeSwitch(*this, key);
+    if (!vectorNodeSwitch) return;
+
+    TxEIt child(itemKey);
+
+    for (child = child.begin(rootElement_); child != child.end(); ++child) {
+        // In the next deserialization call do net fetch the "child" since we are looping...
+        // hence the "false" as the last arg.
+        NodeSwitch elementNodeSwitch(*this, &(*child), false);
+        try {
+            T item;
+            deserialize(itemKey, item);
+            set.insert(std::move(item));
+
+        } catch (...) {
+            handleError(IvwContext);
+        }
     }
 }
 
