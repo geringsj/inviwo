@@ -88,9 +88,6 @@ private:
     std::thread thread_;
 
     zmq::context_t ctx_;
-    zmq::socket_t camera_socket_;
-    zmq::message_t address_;
-    zmq::message_t message_;
 };
 
 }  // namespace inviwo
