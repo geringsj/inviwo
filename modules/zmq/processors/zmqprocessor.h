@@ -69,25 +69,25 @@ public:
     static const ProcessorInfo processorInfo_;
 
 public:
-
 private:
     CompositeProperty camParamsL_;
     CompositeProperty camParamsR_;
     FloatVec3Property cameraLFrom_;
     FloatVec3Property cameraRFrom_;
-	FloatVec3Property cameraLTo_;
+    FloatVec3Property cameraLTo_;
     FloatVec3Property cameraRTo_;
     FloatVec3Property cameraLUp_;
     FloatVec3Property cameraRUp_;
 
-	std::atomic<bool> should_run_;
+    std::atomic<bool> should_run_;
     std::future<void> future_;
 
-	void receiveZMQ();
-    void parseMessage(json content, std::string address);
+    void receiveZMQ();
+    void parseMessage(json content);
     std::thread thread_;
 
     zmq::context_t ctx_;
+    std::mutex lock_;
 };
 
 }  // namespace inviwo
