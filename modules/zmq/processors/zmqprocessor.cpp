@@ -46,7 +46,6 @@ const ProcessorInfo Zmq::getProcessorInfo() const { return processorInfo_; }
 Zmq::Zmq()
     : Processor()
     , ctx_(1)
-    , camera_socket_(ctx_, ZMQ_SUB)
     , should_run_(true)
     , camParamsL_("camparamsL", "Camera Parameters L")
     , camParamsR_("camparamsR", "Camera Parameters R")
@@ -79,32 +78,34 @@ Zmq::Zmq()
     cameraLUp_.setReadOnly(true);
     cameraRUp_.setReadOnly(true);
 
-    camera_socket_.setsockopt(ZMQ_IDENTITY, "Inviwo", 6);
-    camera_socket_.setsockopt(ZMQ_SUBSCRIBE, "", 0);
-    int linger = 0;
-    camera_socket_.setsockopt(ZMQ_LINGER, &linger, sizeof(linger));
-    // int t = 2;
-    // camera_socket_.setsockopt(ZMQ_RCVTIMEO, &t, sizeof(t));
-    camera_socket_.connect("tcp://localhost:12345");
-
     thread_ = std::thread(&Zmq::receiveZMQ, this);
 }
 
 Zmq::~Zmq() {
     should_run_ = false;
     thread_.join();
-
-    camera_socket_.close();
     ctx_.close();
-
-	address_.~message_t();
-	message_.~message_t();
+    //delete ctx;
 }
 
 void Zmq::process() {}
 
 void Zmq::receiveZMQ() {
+
+    zmq::socket_t camera_socket_ = zmq::socket_t(ctx_, ZMQ_SUB);
+
+	camera_socket_.setsockopt(ZMQ_IDENTITY, "Inviwo", 6);
+    camera_socket_.setsockopt(ZMQ_SUBSCRIBE, "", 0);
+    int linger = 0;
+    camera_socket_.setsockopt(ZMQ_LINGER, &linger, sizeof(linger));
+    
+	camera_socket_.connect("tcp://localhost:12345");
+
+	zmq::message_t address_ = zmq::message_t();
+    zmq::message_t message_ = zmq::message_t();
+
     future_ = dispatchFront([this]() {});
+
     LogInfo("Receive");
 	while (should_run_ == true) {
         camera_socket_.recv(&address_);
@@ -112,7 +113,7 @@ void Zmq::receiveZMQ() {
 
         if (future_.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready) {
             LogInfo("Run outside");
-			future_ = dispatchFront([this]() {
+			future_ = dispatchFront([this, &message_, &address_]() {
                 if (should_run_ == true) {
                     LogInfo("Run inside");
                     parseMessage(json::parse(std::string(static_cast<char*>(message_.data()),
@@ -122,6 +123,9 @@ void Zmq::receiveZMQ() {
             });
         }
     }
+
+	/*address_.~message_t();
+    message_.~message_t();*/
 }
 
 void Zmq::parseMessage(json content, std::string address) {
