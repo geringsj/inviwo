@@ -84,53 +84,48 @@ Zmq::Zmq()
 Zmq::~Zmq() {
     should_run_ = false;
     thread_.join();
-    ctx_.close();
-    //delete ctx;
+    lock_.lock();
+    thread_.~thread();
+    lock_.unlock();
 }
 
 void Zmq::process() {}
 
 void Zmq::receiveZMQ() {
-
-    zmq::socket_t camera_socket_ = zmq::socket_t(ctx_, ZMQ_SUB);
-
-	camera_socket_.setsockopt(ZMQ_IDENTITY, "Inviwo", 6);
-    camera_socket_.setsockopt(ZMQ_SUBSCRIBE, "", 0);
-    int linger = 0;
-    camera_socket_.setsockopt(ZMQ_LINGER, &linger, sizeof(linger));
-    
-	camera_socket_.connect("tcp://localhost:12345");
-
-	zmq::message_t address_ = zmq::message_t();
-    zmq::message_t message_ = zmq::message_t();
+    zmq::context_t context(1);
+    zmq::socket_t camera_socket = zmq::socket_t(context, ZMQ_SUB);
+    camera_socket.setsockopt(ZMQ_IDENTITY, "Inviwo", 6);
+    camera_socket.connect("tcp://localhost:12345");
+    camera_socket.setsockopt(ZMQ_SUBSCRIBE, "", 0);
 
     future_ = dispatchFront([this]() {});
 
     LogInfo("Receive");
-	while (should_run_ == true) {
-        camera_socket_.recv(&address_);
-        camera_socket_.recv(&message_);
+    while (should_run_ == true) {
+        // Address Message:
+        zmq::message_t address;
+        camera_socket.recv(&address);
+        std::string address_string =
+            std::string(static_cast<char*>(address.data()), address.size());
+
+        // Content Message:
+        zmq::message_t message;
+        camera_socket.recv(&message);
+        std::string message_string =
+            std::string(static_cast<char*>(message.data()), message.size());
 
         if (future_.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready) {
-            LogInfo("Run outside");
-			future_ = dispatchFront([this, &message_, &address_]() {
-                if (should_run_ == true) {
-                    LogInfo("Run inside");
-                    parseMessage(json::parse(std::string(static_cast<char*>(message_.data()),
-                                                         message_.size())),
-                                 std::string(static_cast<char*>(address_.data()), address_.size()));
-                }
+            future_ = dispatchFront([this, address_string]() {
+                lock_.lock();
+                parseMessage(json::parse(address_string));
             });
         }
     }
-
-	/*address_.~message_t();
-    message_.~message_t();*/
 }
 
-void Zmq::parseMessage(json content, std::string address) {
+void Zmq::parseMessage(json content) {
     // Left Eye
-    // Get free fly props from unity
+    // Get camera props from unity
     vec3 fromL =
         vec3(content["camVecCamL"]["x"], content["camVecCamL"]["y"], content["camVecCamL"]["z"]);
     fromL.x = -fromL.x;
@@ -146,7 +141,7 @@ void Zmq::parseMessage(json content, std::string address) {
     cameraLUp_.set(upL);
 
     // Right Eye
-    // Get free fly props from unity
+    // Get camera props from unity
     vec3 fromR =
         vec3(content["camVecCamR"]["x"], content["camVecCamR"]["y"], content["camVecCamR"]["z"]);
     fromR.x = -fromR.x;
@@ -160,5 +155,6 @@ void Zmq::parseMessage(json content, std::string address) {
     cameraRFrom_.set(fromR);
     cameraRTo_.set(fromR + toR);
     cameraRUp_.set(upR);
+    lock_.unlock();
 }
 }  // namespace inviwo
