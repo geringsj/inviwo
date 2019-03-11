@@ -115,9 +115,9 @@ void Zmq::receiveZMQ() {
             std::string(static_cast<char*>(message.data()), message.size());
 
         if (future_.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready) {
-            future_ = dispatchFront([this, address_string]() {
+            future_ = dispatchFront([this, message_string]() {
                 lock_.lock();
-                parseMessage(json::parse(address_string));
+                parseMessage(json::parse(message_string));
             });
         }
     }
