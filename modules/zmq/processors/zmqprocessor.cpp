@@ -105,14 +105,12 @@ void Zmq::receiveZMQ() {
         // Address Message:
         zmq::message_t address;
         camera_socket.recv(&address);
-        std::string address_string =
-            std::string(static_cast<char*>(address.data()), address.size());
+        std::string address_string = std::string(static_cast<char*>(address.data()), address.size());
 
         // Content Message:
         zmq::message_t message;
         camera_socket.recv(&message);
-        std::string message_string =
-            std::string(static_cast<char*>(message.data()), message.size());
+        std::string message_string = std::string(static_cast<char*>(message.data()), message.size());
 
         if (future_.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready) {
             future_ = dispatchFront([this, message_string]() {
