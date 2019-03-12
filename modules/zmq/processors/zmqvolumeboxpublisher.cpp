@@ -46,21 +46,24 @@ const ProcessorInfo ZmqVolumeBoxProcessor::getProcessorInfo() const { return pro
 
 ZmqVolumeBoxProcessor::ZmqVolumeBoxProcessor()
     : Processor()
-    , volume_("volume")
-    , ctx_(1)
-    , socket_(ctx_, ZMQ_PUB) {
+    , volume_("volume") {
 
     addPort(volume_);
 
-	socket_.bind("tcp://*:12346");
-	//sendZMQ();
-	std::string str = "inviwo";
-    zmq::message_t message(static_cast<const void*> (str.data()), str.size());
+    zmq::context_t context(1);
+    zmq::socket_t box_socket(context, ZMQ_PUB);
+	box_socket.bind("tcp://*:12345");
+	//std::string str = "inviwo";
+    //zmq::message_t message(str.size());
+    //memcpy(message.data(), str.data(), str.size());
 	std::string str2 = "Hallo";
-    zmq::message_t message2(static_cast<const void*> (str2.data()), str2.size());
-	
-    socket_.send(message, ZMQ_SNDMORE);
-    socket_.send(message2);
+    zmq::message_t message2(str2.size());
+    memcpy(message2.data(), str2.data(), str2.size());
+		
+    //box_socket.send(message, ZMQ_SNDMORE);
+    bool rc = box_socket.send(message2);
+
+    LogWarn(rc);
 }
 
 ZmqVolumeBoxProcessor::~ZmqVolumeBoxProcessor() {}
@@ -69,11 +72,11 @@ void ZmqVolumeBoxProcessor::process() {
 }
 
 void ZmqVolumeBoxProcessor::sendZMQ() { 
-	std::string str = "Hallo";
+	/*std::string str = "Hallo";
     zmq::message_t message(str.size());
 	memcpy(message.data(), str.data(), str.size());
     LogInfo(str.data());
-    LogInfo(socket_.send(message));
+    LogInfo(socket_.send(message));*/
 }
 
 void ZmqVolumeBoxProcessor::packMessage() {
