@@ -75,9 +75,6 @@ private:
 
 	void sendZMQ();
     void packMessage();
-
-    zmq::context_t ctx_;
-    zmq::socket_t socket_;
 };
 }  // namespace inviwo
 
