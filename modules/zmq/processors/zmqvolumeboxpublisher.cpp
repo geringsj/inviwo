@@ -48,8 +48,7 @@ ZmqVolumeBoxProcessor::ZmqVolumeBoxProcessor()
     : Processor()
     , volume_("volume") 
 	, context(zmq::context_t(1))
-	, box_socket(zmq::socket_t(context, ZMQ_PUB))
-	, message(zmq::message_t()) {
+	, box_socket(zmq::socket_t(context, ZMQ_PUB)) {
 
     addPort(volume_);
 
@@ -64,7 +63,7 @@ void ZmqVolumeBoxProcessor::process() {
 
 void ZmqVolumeBoxProcessor::sendZMQ() { 
 	std::string str2 = "hallo";
-    message = zmq::message_t(str2.size());
+    zmq::message_t message = zmq::message_t(str2.size());
     memcpy(message.data(), str2.data(), str2.size());
 	box_socket.send(message);
 }
