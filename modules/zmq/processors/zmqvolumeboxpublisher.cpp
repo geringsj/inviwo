@@ -62,10 +62,12 @@ void ZmqVolumeBoxProcessor::process() {
 }
 
 void ZmqVolumeBoxProcessor::sendZMQ() { 
+	// Namespace Message Preparation
 	std::string namespace_identifier_string = "volume_extremes";
     zmq::message_t namespace_identifier_ = zmq::message_t(namespace_identifier_string.size());
     memcpy(namespace_identifier_.data(), namespace_identifier_string.data(), namespace_identifier_string.size());
 
+	// Extraction of Volume Extremes
     mat3 basis = volume_.getData()->getBasis();
     vec3 offset = volume_.getData()->getOffset();
     vec3 left_lower = vec3(0, 0, 0);
@@ -77,10 +79,12 @@ void ZmqVolumeBoxProcessor::sendZMQ() {
 		{"rightUpper", {{"x", right_upper.x}, {"y", right_upper.y}, {"z", right_upper.z}}}
 	};
 	
+	// Extremes Message Preparation
 	std::string string_message = json_message.dump();
     zmq::message_t message = zmq::message_t(string_message.size());
     memcpy(message.data(), string_message.data(), string_message.size());
 
+	// Sending the Messages
     box_socket.send(namespace_identifier_, ZMQ_SNDMORE);
 	box_socket.send(message); 
 }
