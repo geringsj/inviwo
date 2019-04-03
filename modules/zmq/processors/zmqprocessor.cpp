@@ -100,7 +100,6 @@ void Zmq::receiveZMQ() {
 
     future_ = dispatchFront([this]() {});
 
-    LogInfo("Receive");
     while (should_run_ == true) {
         // Address Message:
         zmq::message_t address;
