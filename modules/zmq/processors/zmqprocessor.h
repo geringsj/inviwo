@@ -87,7 +87,6 @@ private:
     std::thread thread_;
 
     zmq::context_t ctx_;
-    std::mutex lock_;
 };
 
 }  // namespace inviwo
