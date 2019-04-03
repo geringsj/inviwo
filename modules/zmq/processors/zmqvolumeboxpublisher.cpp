@@ -62,6 +62,10 @@ void ZmqVolumeBoxProcessor::process() {
 }
 
 void ZmqVolumeBoxProcessor::sendZMQ() { 
+	std::string namespace_identifier_string = "volume_extremes";
+    zmq::message_t namespace_identifier_ = zmq::message_t(namespace_identifier_string.size());
+    memcpy(namespace_identifier_.data(), namespace_identifier_string.data(), namespace_identifier_string.size());
+
     mat3 basis = volume_.getData()->getBasis();
     vec3 offset = volume_.getData()->getOffset();
     vec3 left_lower = vec3(0, 0, 0);
@@ -76,6 +80,8 @@ void ZmqVolumeBoxProcessor::sendZMQ() {
 	std::string string_message = json_message.dump();
     zmq::message_t message = zmq::message_t(string_message.size());
     memcpy(message.data(), string_message.data(), string_message.size());
-	box_socket.send(message);
+
+    box_socket.send(namespace_identifier_, ZMQ_SNDMORE);
+	box_socket.send(message); 
 }
-}  // namespace inviwo
+}  // namespace inviwo 
