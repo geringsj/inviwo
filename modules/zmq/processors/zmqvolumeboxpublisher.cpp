@@ -52,7 +52,7 @@ ZmqVolumeBoxProcessor::ZmqVolumeBoxProcessor()
 
     addPort(volume_);
 
-	box_socket.bind("tcp://*:12345");
+	box_socket.bind("tcp://*:12346");
 }
 
 ZmqVolumeBoxProcessor::~ZmqVolumeBoxProcessor() {}
@@ -62,12 +62,20 @@ void ZmqVolumeBoxProcessor::process() {
 }
 
 void ZmqVolumeBoxProcessor::sendZMQ() { 
-	std::string str2 = "hallo";
-    zmq::message_t message = zmq::message_t(str2.size());
-    memcpy(message.data(), str2.data(), str2.size());
+    mat3 basis = volume_.getData()->getBasis();
+    vec3 offset = volume_.getData()->getOffset();
+    vec3 left_lower = vec3(0, 0, 0);
+    vec3 right_upper = vec3(1, 1, 1);
+    left_lower = left_lower * basis + offset;
+    right_upper = right_upper * basis + offset;
+    json json_message = {
+		{"leftLower", {left_lower.x, left_lower.y, left_lower.z}},
+		{"rightUpper", {right_upper.x, right_upper.y, right_upper.z}}
+	};
+	
+	std::string string_message = json_message.dump();
+    zmq::message_t message = zmq::message_t(string_message.size());
+    memcpy(message.data(), string_message.data(), string_message.size());
 	box_socket.send(message);
-}
-
-void ZmqVolumeBoxProcessor::packMessage() {
 }
 }  // namespace inviwo
