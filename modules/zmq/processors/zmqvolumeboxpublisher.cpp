@@ -69,8 +69,8 @@ void ZmqVolumeBoxProcessor::sendZMQ() {
     left_lower = left_lower * basis + offset;
     right_upper = right_upper * basis + offset;
     json json_message = {
-		{"leftLower", {left_lower.x, left_lower.y, left_lower.z}},
-		{"rightUpper", {right_upper.x, right_upper.y, right_upper.z}}
+		{"leftLower", {{"x", left_lower.x}, {"y", left_lower.y}, {"z", left_lower.z}}},
+		{"rightUpper", {{"x", right_upper.x}, {"y", right_upper.y}, {"z", right_upper.z}}}
 	};
 	
 	std::string string_message = json_message.dump();
