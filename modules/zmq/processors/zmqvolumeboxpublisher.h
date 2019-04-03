@@ -74,7 +74,6 @@ private:
     VolumeInport volume_;
 
 	void sendZMQ();
-    void packMessage();
 
 	zmq::context_t context;
     zmq::socket_t box_socket;
