@@ -78,7 +78,6 @@ private:
 
 	zmq::context_t context;
     zmq::socket_t box_socket;
-        zmq::message_t message;
 };
 }  // namespace inviwo
 
