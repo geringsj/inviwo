@@ -29,7 +29,6 @@
 
 #include <modules/zmq/processors/zmqprocessor.h>
 #include <inviwo/core/common/inviwoapplication.h>
-#include <inviwo/core/network/networklock.h>
 #include <limits>
 
 namespace inviwo {
@@ -84,9 +83,7 @@ Zmq::Zmq()
 Zmq::~Zmq() {
     should_run_ = false;
     thread_.join();
-    lock_.lock();
     thread_.~thread();
-    lock_.unlock();
 }
 
 void Zmq::process() {}
@@ -97,6 +94,7 @@ void Zmq::receiveZMQ() {
     camera_socket.setsockopt(ZMQ_IDENTITY, "Inviwo", 6);
     camera_socket.connect("tcp://localhost:12345");
     camera_socket.setsockopt(ZMQ_SUBSCRIBE, "", 0);
+    camera_socket.setsockopt(ZMQ_RCVTIMEO, 10);
 
     future_ = dispatchFront([this]() {});
 
@@ -113,11 +111,12 @@ void Zmq::receiveZMQ() {
 
         if (future_.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready) {
             future_ = dispatchFront([this, message_string]() {
-                lock_.lock();
                 parseMessage(json::parse(message_string));
             });
         }
     }
+
+	camera_socket.~socket_t();
 }
 
 void Zmq::parseMessage(json content) {
@@ -152,6 +151,5 @@ void Zmq::parseMessage(json content) {
     cameraRFrom_.set(fromR);
     cameraRTo_.set(fromR + toR);
     cameraRUp_.set(upR);
-    lock_.unlock();
 }
 }  // namespace inviwo
