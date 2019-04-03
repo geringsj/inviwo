@@ -117,6 +117,7 @@ void Zmq::receiveZMQ() {
     }
 
 	camera_socket.~socket_t();
+	context.~context_t();
 }
 
 void Zmq::parseMessage(json content) {
