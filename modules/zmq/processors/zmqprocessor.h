@@ -36,6 +36,7 @@
 #include <inviwo/core/properties/ordinalproperty.h>
 #include <inviwo/core/properties/cameraproperty.h>
 #include <inviwo/core/properties/compositeproperty.h>
+#include <inviwo/core/properties/buttonproperty.h>
 #include <zmq.hpp>
 #include <thread>
 #include "../ext/json.hpp"
@@ -70,6 +71,8 @@ public:
 
 public:
 private:
+    CompositeProperty addParam_;
+    ButtonProperty addParamButton_;
     CompositeProperty camParamsL_;
     CompositeProperty camParamsR_;
     FloatVec3Property cameraLFrom_;
