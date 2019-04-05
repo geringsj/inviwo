@@ -46,6 +46,8 @@ Zmq::Zmq()
     : Processor()
     , ctx_(1)
     , should_run_(true)
+    , addParam_("addParam", "Add Parameter")
+    , addParamButton_("add", "Add")
     , camParamsL_("camparamsL", "Camera Parameters L")
     , camParamsR_("camparamsR", "Camera Parameters R")
     , cameraLFrom_("lookFromL", "Look From L", vec3(1.0f), -vec3(1000.0f), vec3(1000.0f),
@@ -58,6 +60,9 @@ Zmq::Zmq()
                  vec3(0.1f))
     , cameraRUp_("lookUpR", "Look up R", vec3(0.0f, 1.0f, 0.0f), -vec3(100.0f), vec3(100.0f),
                  vec3(0.1f)) {
+
+	addProperty(addParam_);
+    addParam_.addProperty(addParamButton_);
 
     addProperty(camParamsL_);
     camParamsL_.addProperty(cameraLFrom_);
@@ -78,6 +83,10 @@ Zmq::Zmq()
     cameraRUp_.setReadOnly(true);
 
     thread_ = std::thread(&Zmq::receiveZMQ, this);
+
+	addParamButton_.onChange([&]() {
+        LogWarn("Test Add Button.");
+	});
 }
 
 Zmq::~Zmq() {
