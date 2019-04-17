@@ -47,6 +47,9 @@ Zmq::Zmq()
     , ctx_(1)
     , should_run_(true)
     , addParam_("addParam", "Add Parameter")
+    , type_("property", "Property")
+    , name_("name", "Name")
+    , address_("address", "Address")
     , addParamButton_("add", "Add")
     , camParamsL_("camparamsL", "Camera Parameters L")
     , camParamsR_("camparamsR", "Camera Parameters R")
@@ -61,7 +64,14 @@ Zmq::Zmq()
     , cameraRUp_("lookUpR", "Look up R", vec3(0.0f, 1.0f, 0.0f), -vec3(100.0f), vec3(100.0f),
                  vec3(0.1f)) {
 
-	addProperty(addParam_);
+    addProperty(addParam_);
+    type_.addOption("Float", "Float");
+    type_.addOption("Int", "Int");
+    type_.setSelectedIndex(0);
+    type_.setCurrentStateAsDefault();
+    addParam_.addProperty(type_);
+    addParam_.addProperty(name_);
+    addParam_.addProperty(address_);
     addParam_.addProperty(addParamButton_);
 
     addProperty(camParamsL_);
@@ -84,9 +94,7 @@ Zmq::Zmq()
 
     thread_ = std::thread(&Zmq::receiveZMQ, this);
 
-	addParamButton_.onChange([&]() {
-        LogWarn("Test Add Button.");
-	});
+    addParamButton_.onChange([&]() { addSelectedProperty(); });
 }
 
 Zmq::~Zmq() {
@@ -99,34 +107,35 @@ void Zmq::process() {}
 
 void Zmq::receiveZMQ() {
     zmq::context_t context(1);
-    zmq::socket_t camera_socket = zmq::socket_t(context, ZMQ_SUB);
-    camera_socket.setsockopt(ZMQ_IDENTITY, "Inviwo", 6);
-    camera_socket.connect("tcp://localhost:12345");
-    camera_socket.setsockopt(ZMQ_SUBSCRIBE, "", 0);
-    camera_socket.setsockopt(ZMQ_RCVTIMEO, 10);
+    zmq::socket_t zmq_socket = zmq::socket_t(context, ZMQ_SUB);
+    zmq_socket.setsockopt(ZMQ_IDENTITY, "Inviwo", 6);
+    zmq_socket.connect("tcp://localhost:12345");
+    zmq_socket.setsockopt(ZMQ_SUBSCRIBE, "", 0);
+    zmq_socket.setsockopt(ZMQ_RCVTIMEO, 10);
 
     future_ = dispatchFront([this]() {});
 
     while (should_run_ == true) {
         // Address Message:
         zmq::message_t address;
-        camera_socket.recv(&address);
-        std::string address_string = std::string(static_cast<char*>(address.data()), address.size());
+        zmq_socket.recv(&address);
+        std::string address_string =
+            std::string(static_cast<char*>(address.data()), address.size());
 
         // Content Message:
         zmq::message_t message;
-        camera_socket.recv(&message);
-        std::string message_string = std::string(static_cast<char*>(message.data()), message.size());
+        zmq_socket.recv(&message);
+        std::string message_string =
+            std::string(static_cast<char*>(message.data()), message.size());
 
         if (future_.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready) {
-            future_ = dispatchFront([this, message_string]() {
-                parseMessage(json::parse(message_string));
-            });
+            future_ = dispatchFront(
+                [this, message_string]() { parseMessage(json::parse(message_string)); });
         }
     }
 
-	camera_socket.~socket_t();
-	context.~context_t();
+    zmq_socket.~socket_t();
+    context.~context_t();
 }
 
 void Zmq::parseMessage(json content) {
@@ -162,4 +171,21 @@ void Zmq::parseMessage(json content) {
     cameraRTo_.set(fromR + toR);
     cameraRUp_.set(upR);
 }
+
+void Zmq::addSelectedProperty() {
+    if (name_.get() != "" && address_.get() != "") {
+		std::string selectedType = type_.getSelectedDisplayName();
+    	if (selectedType == "Float") {
+    	    addFloatProperty();
+    	} else if (selectedType == "Int") {
+    	    addIntProperty();
+		}
+    } else {
+        LogWarn("Please Specify a Name and Adress for your new Property.")
+	}
+}
+
+void Zmq::addFloatProperty() { LogInfo("testFloat"); }
+
+void Zmq::addIntProperty() { LogInfo("testInt"); }
 }  // namespace inviwo

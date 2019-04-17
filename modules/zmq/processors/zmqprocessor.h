@@ -37,6 +37,7 @@
 #include <inviwo/core/properties/cameraproperty.h>
 #include <inviwo/core/properties/compositeproperty.h>
 #include <inviwo/core/properties/buttonproperty.h>
+#include <inviwo/core/properties/stringproperty.h>
 #include <zmq.hpp>
 #include <thread>
 #include "../ext/json.hpp"
@@ -72,6 +73,9 @@ public:
 public:
 private:
     CompositeProperty addParam_;
+    OptionPropertyString type_;
+    StringProperty name_;
+    StringProperty address_;
     ButtonProperty addParamButton_;
     CompositeProperty camParamsL_;
     CompositeProperty camParamsR_;
@@ -87,6 +91,9 @@ private:
 
     void receiveZMQ();
     void parseMessage(json content);
+    void addSelectedProperty();
+    void addFloatProperty();
+    void addIntProperty();
     std::thread thread_;
 
     zmq::context_t ctx_;
