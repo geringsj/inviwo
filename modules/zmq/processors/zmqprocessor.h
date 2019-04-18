@@ -46,6 +46,13 @@ using json = nlohmann::json;
 
 namespace inviwo {
 
+struct PropMapping {
+    std::string address;
+    std::string type;
+    CompositeProperty* property;
+    Property* mirror;
+};
+
 /** \docpage{org.inviwo.Spout, Spout}
  * ![](org.inviwo.Spout.png?classIdentifier=org.inviwo.Spout)
  * Uses Spout to share the image with other Applications.
@@ -72,11 +79,13 @@ public:
 
 public:
 private:
+    // Add Property Props
     CompositeProperty addParam_;
     OptionPropertyString type_;
     StringProperty name_;
     StringProperty address_;
     ButtonProperty addParamButton_;
+    // Camera Props
     CompositeProperty camParamsL_;
     CompositeProperty camParamsR_;
     FloatVec3Property cameraLFrom_;
@@ -85,15 +94,18 @@ private:
     FloatVec3Property cameraRTo_;
     FloatVec3Property cameraLUp_;
     FloatVec3Property cameraRUp_;
+    // Additional Props
+    std::vector<PropMapping> additionalProps;
 
     std::atomic<bool> should_run_;
     std::future<void> future_;
 
     void receiveZMQ();
-    void parseMessage(json content);
+    void parseMessage(std::string, json);
+    void parseStereoCameraMessage(json);
     void addSelectedProperty();
-    void addFloatProperty();
-    void addIntProperty();
+    void addFloatProperty(CompositeProperty*, PropMapping*);
+    void addIntProperty(CompositeProperty*, PropMapping*);
     std::thread thread_;
 
     zmq::context_t ctx_;
