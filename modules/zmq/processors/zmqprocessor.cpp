@@ -119,8 +119,7 @@ void Zmq::receiveZMQ() {
         // Address Message:
         zmq::message_t address;
         zmq_socket.recv(&address);
-        std::string address_string =
-            std::string(static_cast<char*>(address.data()), address.size());
+        std::string address_string = std::string(static_cast<char*>(address.data()), address.size());
 
         // Content Message:
         zmq::message_t message;
@@ -129,8 +128,7 @@ void Zmq::receiveZMQ() {
             std::string(static_cast<char*>(message.data()), message.size());
 
         if (future_.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready) {
-            future_ = dispatchFront(
-                [this, message_string]() { parseMessage(json::parse(message_string)); });
+            future_ = dispatchFront( [this, message_string]() { parseMessage(json::parse(message_string)); });
         }
     }
 
@@ -138,7 +136,13 @@ void Zmq::receiveZMQ() {
     context.~context_t();
 }
 
-void Zmq::parseMessage(json content) {
+void Zmq::parseMessage(std::string address, json content) {
+    LogWarn(address);
+    LogWarn(content);
+    //if (address)
+}
+
+void Zmq::parseStereoCameraMessage(json content) {
     // Left Eye
     // Get camera props from unity
     vec3 fromL =
@@ -174,18 +178,37 @@ void Zmq::parseMessage(json content) {
 
 void Zmq::addSelectedProperty() {
     if (name_.get() != "" && address_.get() != "") {
+		// Create a new Composite Property with the matching address
+		CompositeProperty* newComp = new CompositeProperty(name_.get(),name_.get());
+		// Create the PropertyMapping for later modifications
+    	PropMapping pm = PropMapping();
+    	pm.address = address_.get();
+    	pm.type = type_.get();
+    	pm.property = newComp;
+
+		// Add type-specific props
 		std::string selectedType = type_.getSelectedDisplayName();
     	if (selectedType == "Float") {
-    	    addFloatProperty();
+    	    addFloatProperty(newComp, &pm);
     	} else if (selectedType == "Int") {
-    	    addIntProperty();
+    	    addIntProperty(newComp, &pm);
 		}
+
+		// Add the new Property
+    	additionalProps.push_back(pm);
+    	addProperty(pm.property);
     } else {
         LogWarn("Please Specify a Name and Adress for your new Property.")
 	}
 }
 
-void Zmq::addFloatProperty() { LogInfo("testFloat"); }
+void Zmq::addFloatProperty(CompositeProperty* newComp, PropMapping* pm) { 
+    newComp->addProperty(new FloatProperty("value", "Value", 0.0, -10000.0, 10000.0));
+    pm->mirror = new FloatProperty("value", "Value", 0.0, -10000.0, 10000.0);
+}
 
-void Zmq::addIntProperty() { LogInfo("testInt"); }
+void Zmq::addIntProperty(CompositeProperty* newComp, PropMapping* pm) { 
+	newComp->addProperty(new IntProperty("value", "Value", 0, -10000, 10000));
+	pm->mirror = new IntProperty("value", "Value", 0, -10000, 10000);
+}
 }  // namespace inviwo
