@@ -50,7 +50,7 @@ struct PropMapping {
     std::string address;
     std::string type;
     CompositeProperty* property;
-    Property* mirror;
+    CompositeProperty* mirror;
 };
 
 /** \docpage{org.inviwo.Spout, Spout}
@@ -85,15 +85,6 @@ private:
     StringProperty name_;
     StringProperty address_;
     ButtonProperty addParamButton_;
-    // Camera Props
-    CompositeProperty camParamsL_;
-    CompositeProperty camParamsR_;
-    FloatVec3Property cameraLFrom_;
-    FloatVec3Property cameraRFrom_;
-    FloatVec3Property cameraLTo_;
-    FloatVec3Property cameraRTo_;
-    FloatVec3Property cameraLUp_;
-    FloatVec3Property cameraRUp_;
     // Additional Props
     std::vector<PropMapping> additionalProps;
 
@@ -101,13 +92,19 @@ private:
     std::future<void> future_;
 
     void receiveZMQ();
-    void parseMessage(std::string, json);
-    void parseStereoCameraMessage(json);
-    void addSelectedProperty();
-    void addFloatProperty(CompositeProperty*, PropMapping*);
-    void addIntProperty(CompositeProperty*, PropMapping*);
-    std::thread thread_;
+    void updateUI();
 
+    void parseMessage(std::string, json);
+    void parseStereoCameraMessage(PropMapping*, json);
+    void parseFloatMessage(PropMapping*, json);
+    void parseIntMessage(PropMapping*, json);
+
+    void addSelectedProperty();
+    void addFloatProperty(CompositeProperty*, CompositeProperty*);
+    void addIntProperty(CompositeProperty*, CompositeProperty*);
+    void addStereoCameraProperty(CompositeProperty*, CompositeProperty*);
+
+    std::thread thread_;
     zmq::context_t ctx_;
 };
 
