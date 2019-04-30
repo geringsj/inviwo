@@ -69,7 +69,6 @@ public:
     virtual const ProcessorInfo getProcessorInfo() const override;
     static const ProcessorInfo processorInfo_;
 
-	void setCanvasSize(ivec2);
     ivec2 getCanvasSize() const;
 
     bool getUseCustomDimensions() const;
