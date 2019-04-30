@@ -33,6 +33,24 @@
 
 namespace inviwo {
 
+PropMapping::PropMapping(std::string address, std::string type, CompositeProperty* property,
+                         CompositeProperty* mirror)
+    : address(address), type(type), property(property), mirror(mirror) {}
+
+void PropMapping::serialize(Serializer& s) const {
+	s.serialize("address", address);
+    s.serialize("type", type);
+    s.serialize("property", &property);
+    s.serialize("mirror", &mirror);
+}
+
+void PropMapping::deserialize(Deserializer& d) {
+	d.deserialize("address", address);
+    d.deserialize("type", type);
+    //d.deserialize("property", property);
+    //d.deserialize("mirror", mirror);
+}
+
 const ProcessorInfo Zmq::processorInfo_{
     "org.inviwo.Zmq",         // Class identifier
     "Zmq",                    // Display name
@@ -44,20 +62,20 @@ const ProcessorInfo Zmq::getProcessorInfo() const { return processorInfo_; }
 
 Zmq::Zmq()
     : Processor()
-    , ctx_(1)
-    , should_run_(true)
     , addParam_("addParam", "Add Parameter")
     , type_("property", "Property")
     , name_("name", "Name")
     , address_("address", "Address")
-    , addParamButton_("add", "Add") {
+    , addParamButton_("add", "Add")
+    , should_run_(true)
+    , ctx_(1) {
 
     // Allow adding properties to the processor
     addProperty(addParam_);
     type_.addOption("Float", "Float");
     type_.addOption("Int", "Int");
     type_.addOption("IntVec2", "IntVec2");
-	type_.addOption("FloatVec3", "FloatVec3");
+    type_.addOption("FloatVec3", "FloatVec3");
     type_.setSelectedIndex(0);
     type_.setCurrentStateAsDefault();
     addParam_.addProperty(type_);
@@ -71,15 +89,11 @@ Zmq::Zmq()
     CompositeProperty* newComp = new CompositeProperty("camera", "Stereo Camera");
     CompositeProperty* newMirror = new CompositeProperty("camera", "Stereo Camera");
     // Create the PropertyMapping for later modifications
-    PropMapping pm = PropMapping();
-    pm.address = "camera";
-    pm.type = "Stereo Camera";
-    pm.property = newComp;
-    pm.mirror = newMirror;
+    PropMapping* pm = new PropMapping("camera", "Stereo Camera", newComp, newMirror);
     addStereoCameraProperty(newComp, newMirror);
     // Add the new Property
     additionalProps.push_back(pm);
-    addProperty(pm.property);
+    addProperty(pm->property);
 
     // Start the thread that listens to ZMQ messages
     thread_ = std::thread(&Zmq::receiveZMQ, this);
@@ -141,51 +155,51 @@ void Zmq::receiveZMQ() {
 
 void Zmq::updateUI() {
     for (auto i = additionalProps.begin(); i != additionalProps.end(); ++i) {
-        PropMapping pm = *i;
-        if (pm.type == "Stereo Camera") {
+        PropMapping* pm = *i;
+        if (pm->type == "Stereo Camera") {
             // Update Left Eye
             dynamic_cast<FloatVec3Property*>(
-                pm.property->getPropertyByIdentifier("lookFromL", true))
+                pm->property->getPropertyByIdentifier("lookFromL", true))
                 ->set(dynamic_cast<FloatVec3Property*>(
-                          pm.mirror->getPropertyByIdentifier("lookFromL", true))
+                          pm->mirror->getPropertyByIdentifier("lookFromL", true))
                           ->get());
-            dynamic_cast<FloatVec3Property*>(pm.property->getPropertyByIdentifier("lookToL", true))
+            dynamic_cast<FloatVec3Property*>(pm->property->getPropertyByIdentifier("lookToL", true))
                 ->set(dynamic_cast<FloatVec3Property*>(
-                          pm.mirror->getPropertyByIdentifier("lookToL", true))
+                          pm->mirror->getPropertyByIdentifier("lookToL", true))
                           ->get());
-            dynamic_cast<FloatVec3Property*>(pm.property->getPropertyByIdentifier("lookUpL", true))
+            dynamic_cast<FloatVec3Property*>(pm->property->getPropertyByIdentifier("lookUpL", true))
                 ->set(dynamic_cast<FloatVec3Property*>(
-                          pm.mirror->getPropertyByIdentifier("lookUpL", true))
+                          pm->mirror->getPropertyByIdentifier("lookUpL", true))
                           ->get());
             // Update Right Eye
             dynamic_cast<FloatVec3Property*>(
-                pm.property->getPropertyByIdentifier("lookFromR", true))
+                pm->property->getPropertyByIdentifier("lookFromR", true))
                 ->set(dynamic_cast<FloatVec3Property*>(
-                          pm.mirror->getPropertyByIdentifier("lookFromR", true))
+                          pm->mirror->getPropertyByIdentifier("lookFromR", true))
                           ->get());
-            dynamic_cast<FloatVec3Property*>(pm.property->getPropertyByIdentifier("lookToR", true))
+            dynamic_cast<FloatVec3Property*>(pm->property->getPropertyByIdentifier("lookToR", true))
                 ->set(dynamic_cast<FloatVec3Property*>(
-                          pm.mirror->getPropertyByIdentifier("lookToR", true))
+                          pm->mirror->getPropertyByIdentifier("lookToR", true))
                           ->get());
-            dynamic_cast<FloatVec3Property*>(pm.property->getPropertyByIdentifier("lookUpR", true))
+            dynamic_cast<FloatVec3Property*>(pm->property->getPropertyByIdentifier("lookUpR", true))
                 ->set(dynamic_cast<FloatVec3Property*>(
-                          pm.mirror->getPropertyByIdentifier("lookUpR", true))
+                          pm->mirror->getPropertyByIdentifier("lookUpR", true))
                           ->get());
-        } else if (pm.type == "Float") {
-            dynamic_cast<FloatProperty*>(pm.property->getPropertyByIdentifier("value"))
-                ->set(dynamic_cast<FloatProperty*>(pm.mirror->getPropertyByIdentifier("value"))
+        } else if (pm->type == "Float") {
+            dynamic_cast<FloatProperty*>(pm->property->getPropertyByIdentifier("value"))
+                ->set(dynamic_cast<FloatProperty*>(pm->mirror->getPropertyByIdentifier("value"))
                           ->get());
-        } else if (pm.type == "Int") {
-            dynamic_cast<IntProperty*>(pm.property->getPropertyByIdentifier("value"))
-                ->set(
-                    dynamic_cast<IntProperty*>(pm.mirror->getPropertyByIdentifier("value"))->get());
-        } else if (pm.type == "IntVec2") {
-            dynamic_cast<IntVec2Property*>(pm.property->getPropertyByIdentifier("value"))
-                ->set(dynamic_cast<IntVec2Property*>(pm.mirror->getPropertyByIdentifier("value"))
+        } else if (pm->type == "Int") {
+            dynamic_cast<IntProperty*>(pm->property->getPropertyByIdentifier("value"))
+                ->set(dynamic_cast<IntProperty*>(pm->mirror->getPropertyByIdentifier("value"))
                           ->get());
-        } else if (pm.type == "FloatVec3") {
-            dynamic_cast<FloatVec3Property*>(pm.property->getPropertyByIdentifier("value"))
-                ->set(dynamic_cast<FloatVec3Property*>(pm.mirror->getPropertyByIdentifier("value"))
+        } else if (pm->type == "IntVec2") {
+            dynamic_cast<IntVec2Property*>(pm->property->getPropertyByIdentifier("value"))
+                ->set(dynamic_cast<IntVec2Property*>(pm->mirror->getPropertyByIdentifier("value"))
+                          ->get());
+        } else if (pm->type == "FloatVec3") {
+            dynamic_cast<FloatVec3Property*>(pm->property->getPropertyByIdentifier("value"))
+                ->set(dynamic_cast<FloatVec3Property*>(pm->mirror->getPropertyByIdentifier("value"))
                           ->get());
         }
     }
@@ -193,18 +207,18 @@ void Zmq::updateUI() {
 
 void Zmq::parseMessage(std::string address, json content) {
     for (auto i = additionalProps.begin(); i != additionalProps.end(); ++i) {
-        PropMapping pm = *i;
-        if (pm.address == address) {
-            if (pm.type == "Stereo Camera") {
-                parseStereoCameraMessage(&pm, content);
-            } else if (pm.type == "Float") {
-                parseFloatMessage(&pm, content);
-            } else if (pm.type == "Int") {
-                parseIntMessage(&pm, content);
-            } else if (pm.type == "IntVec2") {
-                parseIntVec2Message(&pm, content);
-            } else if (pm.type == "FloatVec3") {
-                parseFloatVec3Message(&pm, content);
+        PropMapping* pm = *i;
+        if (pm->address == address) {
+            if (pm->type == "Stereo Camera") {
+                parseStereoCameraMessage(pm, content);
+            } else if (pm->type == "Float") {
+                parseFloatMessage(pm, content);
+            } else if (pm->type == "Int") {
+                parseIntMessage(pm, content);
+            } else if (pm->type == "IntVec2") {
+                parseIntVec2Message(pm, content);
+            } else if (pm->type == "FloatVec3") {
+                parseFloatVec3Message(pm, content);
             }
         }
     }
@@ -278,11 +292,7 @@ void Zmq::addSelectedProperty() {
         CompositeProperty* newComp = new CompositeProperty(name_.get(), name_.get());
         CompositeProperty* newMirror = new CompositeProperty(name_.get(), name_.get());
         // Create the PropertyMapping for later modifications
-        PropMapping pm = PropMapping();
-        pm.address = address_.get();
-        pm.type = type_.get();
-        pm.property = newComp;
-        pm.mirror = newMirror;
+        PropMapping* pm = new PropMapping(address_.get(), type_.get(), newComp, newMirror);
 
         // Add type-specific props
         std::string selectedType = type_.getSelectedDisplayName();
@@ -298,8 +308,8 @@ void Zmq::addSelectedProperty() {
 
         // Add the new Property
         additionalProps.push_back(pm);
-        addProperty(pm.property);
-        pm.property->setSerializationMode(PropertySerializationMode::All);
+        addProperty(pm->property);
+        pm->property->setSerializationMode(PropertySerializationMode::None);
     } else {
         LogWarn("Please Specify a Name and Adress for your new Property.")
     }
@@ -316,8 +326,10 @@ void Zmq::addIntProperty(CompositeProperty* newComp, CompositeProperty* newMirro
 }
 
 void Zmq::addIntVec2Property(CompositeProperty* newComp, CompositeProperty* newMirror) {
-    newComp->addProperty(new IntVec2Property("value", "Value", ivec2(0), -ivec2(10000), ivec2(10000)));
-    newMirror->addProperty(new IntVec2Property("value", "Value", ivec2(0), -ivec2(10000), ivec2(10000)));
+    newComp->addProperty(
+        new IntVec2Property("value", "Value", ivec2(0), -ivec2(10000), ivec2(10000)));
+    newMirror->addProperty(
+        new IntVec2Property("value", "Value", ivec2(0), -ivec2(10000), ivec2(10000)));
 }
 
 void Zmq::addFloatVec3Property(CompositeProperty* newComp, CompositeProperty* newMirror) {
@@ -369,5 +381,15 @@ void Zmq::addStereoCameraProperty(CompositeProperty* newComp, CompositeProperty*
     cameraRMirror->addProperty(new FloatVec3Property("lookUpR", "Look up R", vec3(0.0f, 1.0f, 0.0f),
                                                      -vec3(100.0f), vec3(100.0f), vec3(0.1f)));
     newMirror->addProperty(cameraRMirror);
+}
+
+void Zmq::serialize(Serializer& s) const {
+    s.serialize("propMapping", additionalProps, "propmapping");
+    Processor::serialize(s);
+}
+
+void Zmq::deserialize(Deserializer& d) {
+    d.deserialize("propMapping", additionalProps, "propmapping");
+    Processor::deserialize(d);
 }
 }  // namespace inviwo
