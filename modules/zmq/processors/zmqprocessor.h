@@ -95,13 +95,17 @@ private:
     void updateUI();
 
     void parseMessage(std::string, json);
-    void parseStereoCameraMessage(PropMapping*, json);
     void parseFloatMessage(PropMapping*, json);
     void parseIntMessage(PropMapping*, json);
+    void parseIntVec2Message(PropMapping*, json);
+    void parseFloatVec3Message(PropMapping*, json);
+    void parseStereoCameraMessage(PropMapping*, json);
 
     void addSelectedProperty();
     void addFloatProperty(CompositeProperty*, CompositeProperty*);
     void addIntProperty(CompositeProperty*, CompositeProperty*);
+    void addIntVec2Property(CompositeProperty*, CompositeProperty*);
+    void addFloatVec3Property(CompositeProperty*, CompositeProperty*);
     void addStereoCameraProperty(CompositeProperty*, CompositeProperty*);
 
     std::thread thread_;
