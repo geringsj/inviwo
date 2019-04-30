@@ -46,8 +46,16 @@ using json = nlohmann::json;
 
 namespace inviwo {
 
-struct PropMapping {
-    std::string address;
+class PropMapping : public Serializable {
+public:
+    PropMapping(std::string address, std::string type, CompositeProperty* property,
+                CompositeProperty* mirror);
+    virtual ~PropMapping() = default;
+
+    virtual void serialize(Serializer& s) const override;
+    virtual void deserialize(Deserializer& d) override;
+
+	std::string address;
     std::string type;
     CompositeProperty* property;
     CompositeProperty* mirror;
@@ -74,6 +82,9 @@ public:
 
     virtual void process() override;
 
+    virtual void serialize(Serializer& s) const override;
+    virtual void deserialize(Deserializer& d) override;
+
     virtual const ProcessorInfo getProcessorInfo() const override;
     static const ProcessorInfo processorInfo_;
 
@@ -86,7 +97,7 @@ private:
     StringProperty address_;
     ButtonProperty addParamButton_;
     // Additional Props
-    std::vector<PropMapping> additionalProps;
+    std::vector<PropMapping*> additionalProps;
 
     std::atomic<bool> should_run_;
     std::future<void> future_;
