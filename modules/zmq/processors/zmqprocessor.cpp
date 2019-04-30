@@ -227,7 +227,7 @@ void Zmq::parseStereoCameraMessage(PropMapping* prop, json content) {
     dynamic_cast<FloatVec3Property*>(prop->mirror->getPropertyByIdentifier("lookFromL", true))
         ->set(fromL);
     dynamic_cast<FloatVec3Property*>(prop->mirror->getPropertyByIdentifier("lookToL", true))
-        ->set(toL);
+        ->set(fromL + toL);
     dynamic_cast<FloatVec3Property*>(prop->mirror->getPropertyByIdentifier("lookUpL", true))
         ->set(upL);
 
@@ -247,7 +247,7 @@ void Zmq::parseStereoCameraMessage(PropMapping* prop, json content) {
     dynamic_cast<FloatVec3Property*>(prop->mirror->getPropertyByIdentifier("lookFromR", true))
         ->set(fromR);
     dynamic_cast<FloatVec3Property*>(prop->mirror->getPropertyByIdentifier("lookToR", true))
-        ->set(toR);
+        ->set(fromR + toR);
     dynamic_cast<FloatVec3Property*>(prop->mirror->getPropertyByIdentifier("lookUpR", true))
         ->set(upR);
 }
