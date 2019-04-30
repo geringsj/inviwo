@@ -85,12 +85,6 @@ Spout::Spout()
 
 Spout::~Spout() = default;
 
-void Spout::setCanvasSize(ivec2 dim) {
-    NetworkLock lock(this);
-    dimensions_.set(dim);
-    sizeChanged();
-}
-
 ivec2 Spout::getCanvasSize() const { return dimensions_; }
 bool Spout::getUseCustomDimensions() const { return enableCustomInputDimensions_; }
 ivec2 Spout::getCustomDimensions() const { return customInputDimensions_; }
