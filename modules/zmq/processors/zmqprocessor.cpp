@@ -308,7 +308,7 @@ void Zmq::addSelectedProperty() {
 
         // Add the new Property
         additionalProps.push_back(pm);
-        addProperty(pm->property);
+        addProperty(pm->property.get());
         pm->property->setSerializationMode(PropertySerializationMode::None);
     } else {
         LogWarn("Please Specify a Name and Adress for your new Property.")
