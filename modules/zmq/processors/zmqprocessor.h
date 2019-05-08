@@ -58,8 +58,8 @@ public:
 
 	std::string address;
     std::string type;
-    CompositeProperty* property;
-    CompositeProperty* mirror;
+    std::unique_ptr<CompositeProperty> property;
+    std::unique_ptr<CompositeProperty> mirror;
 };
 
 /** \docpage{org.inviwo.Spout, Spout}
