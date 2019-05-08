@@ -130,23 +130,24 @@ void Zmq::receiveZMQ() {
         std::string message_string =
             std::string(static_cast<char*>(message.data()), message.size());
 
-        try {
-            parseMessage(
-                address_string,
-                json::parse(
-                    message_string));  // Parse all the messages and change the Mirrors accordingly
-        } catch (...) {
-            // Sometimes, the address and message contain incorrect values. This is a HACK to catch
-            // them. It is not a clean solution and should be changed!
-        }
+		if (address_string != "") {
+            try {
+                parseMessage(address_string,
+                             json::parse(message_string));  // Parse all the messages and change the
+                                                            // Mirrors accordingly
+            } catch (...) {
+                // Sometimes, the address and message contain incorrect values. This is a HACK to
+                // catch them. It is not a clean solution and should be changed!
+            }
 
-        if (future_.wait_for(std::chrono::milliseconds(0)) ==
-            std::future_status::ready) {  // If the UI is ready
-            future_ =
-                dispatchFront([this, address_string, message_string]() {  // Go to the UI Thread
-                    updateUI();                                           // Update the UI
-                });
-        }
+            if (future_.wait_for(std::chrono::milliseconds(0)) ==
+                std::future_status::ready) {  // If the UI is ready
+                future_ =
+                    dispatchFront([this, address_string, message_string]() {  // Go to the UI Thread
+                        updateUI();                                           // Update the UI
+                    });
+            }
+		}
     }
 
     zmq_socket.~socket_t();
