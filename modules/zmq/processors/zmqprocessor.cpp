@@ -40,15 +40,15 @@ PropMapping::PropMapping(std::string address, std::string type, CompositePropert
 void PropMapping::serialize(Serializer& s) const {
 	s.serialize("address", address);
     s.serialize("type", type);
-    s.serialize("property", &property);
-    s.serialize("mirror", &mirror);
+    s.serialize("property", property);
+    s.serialize("mirror", mirror);
 }
 
 void PropMapping::deserialize(Deserializer& d) {
 	d.deserialize("address", address);
     d.deserialize("type", type);
-    //d.deserialize("property", property);
-    //d.deserialize("mirror", mirror);
+    d.deserialize("property", property);
+    d.deserialize("mirror", mirror);
 }
 
 const ProcessorInfo Zmq::processorInfo_{
