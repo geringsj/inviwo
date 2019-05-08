@@ -2,7 +2,7 @@
  *
  * Inviwo - Interactive Visualization Workshop
  *
- * Copyright (c) 2012-2018 Inviwo Foundation
+ * Copyright (c) 2012-2019 Inviwo Foundation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,7 +39,7 @@
 #include <inviwo/qt/editor/inviwomainwindow.h>
 #include <inviwo/core/util/filelogger.h>
 #include "inviwosplashscreen.h"
-#include <moduleregistration.h>
+#include <inviwo/core/moduleregistration.h>
 
 #include <sstream>
 #include <algorithm>
@@ -55,6 +55,14 @@ int main(int argc, char** argv) {
     inviwo::LogCentral::init(&logger);
     auto logCounter = std::make_shared<inviwo::LogErrorCounter>();
     logger.registerLogger(logCounter);
+#ifdef __linux__
+    /*
+     * Suppress warning "QApplication: invalid style override passed, ignoring it." when starting
+     * Inviwo on Linux. See
+     * https://forum.qt.io/topic/75398/qt-5-8-0-qapplication-invalid-style-override-passed-ignoring-it/2
+     */
+    qputenv("QT_STYLE_OVERRIDE", "");
+#endif
     inviwo::InviwoApplicationQt inviwoApp(argc, argv, "Inviwo");
     inviwoApp.setWindowIcon(QIcon(":/inviwo/inviwo_light.png"));
     inviwoApp.setAttribute(Qt::AA_NativeWindows);
@@ -122,23 +130,12 @@ int main(int argc, char** argv) {
             {
                 inviwo::util::log(e.getContext(), e.getMessage());
                 std::stringstream ss;
-                auto j = inviwo::util::make_ostream_joiner(ss, "\n");
-                std::copy(e.getStack().begin(), e.getStack().end(), j);
+                e.getStack(ss);
                 LogErrorCustom("Inviwo", ss.str());
             }
             {
                 std::stringstream ss;
-                ss << e.getMessage();
-                if (!e.getStack().empty()) {
-                    ss << "\nStack Trace:\n";
-                    auto j = inviwo::util::make_ostream_joiner(ss, "\n");
-                    if (std::distance(e.getStack().begin(), e.getStack().end()) > 10) {
-                        std::copy(e.getStack().begin(), e.getStack().begin() + 10, j);
-                        ss << "\n...";
-                    } else {
-                        std::copy(e.getStack().begin(), e.getStack().end(), j);
-                    }
-                }
+                e.getFullMessage(ss, 10);
                 ss << "\nApplication state might be corrupted, be warned.";
                 auto res = QMessageBox::critical(
                     &mainWin, "Fatal Error", QString::fromStdString(ss.str()),

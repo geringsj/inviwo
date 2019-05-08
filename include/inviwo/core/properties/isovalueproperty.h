@@ -2,7 +2,7 @@
  *
  * Inviwo - Interactive Visualization Workshop
  *
- * Copyright (c) 2018 Inviwo Foundation
+ * Copyright (c) 2018-2019 Inviwo Foundation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,6 +41,8 @@
 #include <inviwo/core/ports/volumeport.h>
 
 namespace inviwo {
+
+class IsoTFProperty;
 
 /**
  * \ingroup properties
@@ -89,10 +91,13 @@ public:
 
     // Overrides
     virtual void set(const IsoValueCollection& c) override;
+    void set(const IsoTFProperty& p);
     virtual void set(const Property* property) override;
-    virtual void onTFPrimitiveAdded(TFPrimitive* p) override;
-    virtual void onTFPrimitiveRemoved(TFPrimitive* p) override;
-    virtual void onTFPrimitiveChanged(const TFPrimitive* p) override;
+
+    // Overrides TFPrimitiveSetObserver
+    virtual void onTFPrimitiveAdded(TFPrimitive& p) override;
+    virtual void onTFPrimitiveRemoved(TFPrimitive& p) override;
+    virtual void onTFPrimitiveChanged(const TFPrimitive& p) override;
 
 private:
     ValueWrapper<dvec2> zoomH_;

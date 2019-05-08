@@ -2,7 +2,7 @@
  *
  * Inviwo - Interactive Visualization Workshop
  *
- * Copyright (c) 2013-2018 Inviwo Foundation
+ * Copyright (c) 2013-2019 Inviwo Foundation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,10 +36,12 @@ SingleFileObserver::SingleFileObserver(std::string filename) : FileObserver(), f
     start();
 }
 
-SingleFileObserver::~SingleFileObserver() {
-}
+SingleFileObserver::~SingleFileObserver() {}
 
-void SingleFileObserver::start() { startFileObservation(filename_); }
+void SingleFileObserver::start() {
+    if (filename_.empty()) return;
+    startFileObservation(filename_);
+}
 
 void SingleFileObserver::stop() { stopFileObservation(filename_); }
 
@@ -51,10 +53,16 @@ void SingleFileObserver::removeOnChange(const BaseCallBack* callback) {
     onChangeCallbacks_.remove(callback);
 }
 
+void SingleFileObserver::setFilename(const std::string& filename) {
+    stop();
+    filename_ = filename;
+    start();
+}
+
 const std::string& SingleFileObserver::getFilename() const { return filename_; }
 
 void SingleFileObserver::fileChanged(const std::string& /*filename*/) {
     onChangeCallbacks_.invokeAll();
 }
 
-}  // namespace
+}  // namespace inviwo

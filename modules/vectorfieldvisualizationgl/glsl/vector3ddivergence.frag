@@ -2,7 +2,7 @@
  *
  * Inviwo - Interactive Visualization Workshop
  *
- * Copyright (c) 2014-2018 Inviwo Foundation
+ * Copyright (c) 2014-2019 Inviwo Foundation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,13 +42,13 @@ void main() {
 
     vec3 Fx = (getVoxel(volume, volumeParameters, texCoord_.xyz + ox).xyz -
                getVoxel(volume, volumeParameters, texCoord_.xyz - ox).xyz) /
-              2.0f;
+              (2.0f*volumeParameters.worldSpaceGradientSpacing.x);
     vec3 Fy = (getVoxel(volume, volumeParameters, texCoord_.xyz + oy).xyz -
                getVoxel(volume, volumeParameters, texCoord_.xyz - oy).xyz) /
-              2.0f;
+              (2.0f*volumeParameters.worldSpaceGradientSpacing.y);
     vec3 Fz = (getVoxel(volume, volumeParameters, texCoord_.xyz + oz).xyz -
                getVoxel(volume, volumeParameters, texCoord_.xyz - oz).xyz) /
-              2.0f;
+              (2.0f*volumeParameters.worldSpaceGradientSpacing.z);
               
     FragData0 = vec4(Fx.x + Fy.y + Fz.z);
 }

@@ -2,7 +2,7 @@
  *
  * Inviwo - Interactive Visualization Workshop
  *
- * Copyright (c) 2013-2018 Inviwo Foundation
+ * Copyright (c) 2013-2019 Inviwo Foundation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,6 +30,13 @@
 #ifndef IVW_GEOMETRYTYPE_H
 #define IVW_GEOMETRYTYPE_H
 
+#include <inviwo/core/util/ostreamjoiner.h>
+
+#include <flags/flags.h>
+
+#include <iterator>
+#include <ostream>
+
 namespace inviwo {
 
 enum class CoordinatePlane { XY, XZ, YZ, ZY };
@@ -47,12 +54,21 @@ enum class BufferType {
     TexcoordAttrib,
     CurvatureAttrib,
     IndexAttrib,
+    RadiiAttrib,
+    PickingAttrib,
+    ScalarMetaAttrib,
     NumberOfBufferTypes
 };
 
+ALLOW_FLAGS_FOR_ENUM(BufferType)
+using BufferTypes = flags::flags<BufferType>;
+
 enum class BufferUsage { Static, Dynamic };
 
-enum class BufferTarget { Data, Index }; // Index maps to GL_ELEMENT_ARRAY_BUFFER, Data maps to GL_ARRAY_BUFFER
+enum class BufferTarget {
+    Data,
+    Index
+};  // Index maps to GL_ELEMENT_ARRAY_BUFFER, Data maps to GL_ARRAY_BUFFER
 
 enum class DrawType { NotSpecified = 0, Points, Lines, Triangles, NumberOfDrawTypes };
 
@@ -119,13 +135,13 @@ template <class Elem, class Traits>
 std::basic_ostream<Elem, Traits>& operator<<(std::basic_ostream<Elem, Traits>& ss, BufferType bt) {
     switch (bt) {
         case BufferType::PositionAttrib:
-            ss << "Positions";
+            ss << "Position";
             break;
         case BufferType::NormalAttrib:
-            ss << "Normals";
+            ss << "Normal";
             break;
         case BufferType::ColorAttrib:
-            ss << "Colors";
+            ss << "Color";
             break;
         case BufferType::TexcoordAttrib:
             ss << "Texture";
@@ -136,16 +152,28 @@ std::basic_ostream<Elem, Traits>& operator<<(std::basic_ostream<Elem, Traits>& s
         case BufferType::IndexAttrib:
             ss << "Index";
             break;
+        case BufferType::RadiiAttrib:
+            ss << "Radii";
+            break;
+        case BufferType::PickingAttrib:
+            ss << "Picking";
+            break;
+        case BufferType::ScalarMetaAttrib:
+            ss << "ScalarMeta";
+            break;
         case BufferType::NumberOfBufferTypes:
+            ss << "NumberOfBufferTypes";
+            break;
         default:
             ss << "Type not specified";
+            break;
     }
     return ss;
 }
 
 template <class Elem, class Traits>
-std::basic_ostream<Elem, Traits>& operator<<(std::basic_ostream<Elem, Traits>& ss, BufferUsage ut) {
-    switch (ut) {
+std::basic_ostream<Elem, Traits>& operator<<(std::basic_ostream<Elem, Traits>& ss, BufferUsage bu) {
+    switch (bu) {
         case BufferUsage::Static:
             ss << "Static";
             break;
@@ -158,6 +186,21 @@ std::basic_ostream<Elem, Traits>& operator<<(std::basic_ostream<Elem, Traits>& s
     return ss;
 }
 
-}  // namespace
+template <class Elem, class Traits>
+std::basic_ostream<Elem, Traits>& operator<<(std::basic_ostream<Elem, Traits>& ss, BufferTarget bt) {
+    switch (bt) {
+        case BufferTarget::Data :
+            ss << "Data";
+            break;
+        case BufferTarget::Index:
+            ss << "Index";
+            break;
+        default:
+            ss << "Target not specified";
+    }
+    return ss;
+}
+
+}  // namespace inviwo
 
 #endif  // IVW_GEOMETRYTYPE_H

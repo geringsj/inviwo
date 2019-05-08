@@ -2,7 +2,7 @@
  *
  * Inviwo - Interactive Visualization Workshop
  *
- * Copyright (c) 2013-2018 Inviwo Foundation
+ * Copyright (c) 2013-2019 Inviwo Foundation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,6 +34,7 @@ namespace inviwo {
 
 SystemSettings::SystemSettings(InviwoApplication* app)
     : Settings("System Settings", app)
+    , workspaceAuthor_("workspaceAuthor", "Default Workspace Author", "")
     , applicationUsageMode_("applicationUsageMode", "Application usage mode",
                             {{"applicationMode", "Application Mode", UsageMode::Application},
                              {"developerMode", "Developer Mode", UsageMode::Development}},
@@ -49,8 +50,6 @@ SystemSettings::SystemSettings(InviwoApplication* app)
     , enablePickingProperty_("enablePicking", "Enable picking", true)
     , enableSoundProperty_("enableSound", "Enable sound", true)
     , logStackTraceProperty_("logStackTraceProperty", "Error stack trace log", false)
-    , followObjectDuringRotation_("followObjectDuringRotation",
-                                  "Follow Object During Camera Rotation", false)
     , runtimeModuleReloading_("runtimeModuleReloding", "Runtime Module Reloading", false)
     , enableResourceManager_("enableResourceManager", "Enable Resource Manager", false)
     , breakOnMessage_{"breakOnMessage",
@@ -61,6 +60,7 @@ SystemSettings::SystemSettings(InviwoApplication* app)
     , breakOnException_{"breakOnException", "Break on Exception", false}
     , stackTraceInException_{"stackTraceInException", "Create Stack Trace for Exceptions", false} {
 
+    addProperty(workspaceAuthor_);
     addProperty(applicationUsageMode_);
     addProperty(poolSize_);
     addProperty(enablePortInspectors_);
@@ -69,7 +69,6 @@ SystemSettings::SystemSettings(InviwoApplication* app)
     addProperty(enablePickingProperty_);
     addProperty(enableSoundProperty_);
     addProperty(logStackTraceProperty_);
-    addProperty(followObjectDuringRotation_);
     addProperty(runtimeModuleReloading_);
     addProperty(enableResourceManager_);
     addProperty(breakOnMessage_);

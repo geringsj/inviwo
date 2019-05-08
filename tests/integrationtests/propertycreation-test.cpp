@@ -2,7 +2,7 @@
  *
  * Inviwo - Interactive Visualization Workshop
  *
- * Copyright (c) 2014-2018 Inviwo Foundation
+ * Copyright (c) 2014-2019 Inviwo Foundation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,6 +37,7 @@
 #include <inviwo/core/properties/propertysemantics.h>
 #include <inviwo/core/properties/propertyfactory.h>
 #include <inviwo/core/util/logerrorcounter.h>
+#include <inviwo/core/util/stringlogger.h>
 #include <inviwo/core/util/zip.h>
 #include <inviwo/core/common/inviwoapplication.h>
 
@@ -45,12 +46,16 @@ namespace inviwo {
 namespace {
 
 struct LogErrorCheck {
-    LogErrorCheck() : logCounter_{std::make_shared<LogErrorCounter>()} {
+    LogErrorCheck()
+        : logCounter_{std::make_shared<LogErrorCounter>()}
+        , stringLog_{std::make_shared<StringLogger>()} {
         LogCentral::getPtr()->registerLogger(logCounter_);
+        LogCentral::getPtr()->registerLogger(stringLog_);
     }
-    ~LogErrorCheck() { EXPECT_EQ(0, logCounter_->getErrorCount()); }
+    ~LogErrorCheck() { EXPECT_EQ(0, logCounter_->getErrorCount()) << stringLog_->getLog(); }
 
     std::shared_ptr<LogErrorCounter> logCounter_;
+    std::shared_ptr<StringLogger> stringLog_;
 };
 
 }  // namespace
@@ -88,23 +93,35 @@ TEST_P(PropertyCreationTests, Create) {
         auto cComp = dynamic_cast<CompositeProperty*>(c.get());
         ASSERT_NE(cComp, nullptr);
 
-        EXPECT_EQ(sComp->isCollapsed(), cComp->isCollapsed());
+        EXPECT_EQ(sComp->isCollapsed(), cComp->isCollapsed())
+            << "Collapse state mismatch in property copy \'" << GetParam() << "\'";
 
         auto sProps = sComp->getPropertiesRecursive();
         auto cProps = cComp->getPropertiesRecursive();
-        ASSERT_EQ(sProps.size(), cProps.size());
+        ASSERT_EQ(sProps.size(), cProps.size())
+            << "Number of subproperties does not match for property copy \'" << GetParam()
+            << "\'";
 
         for (auto&& item : util::zip(sProps, cProps)) {
-            EXPECT_EQ(item.first()->getIdentifier(), item.second()->getIdentifier());
-            EXPECT_EQ(item.first()->getPath(), item.second()->getPath());
-            EXPECT_EQ(item.first()->getDisplayName(), item.second()->getDisplayName());
-            EXPECT_EQ(item.first()->getClassIdentifier(), item.second()->getClassIdentifier());
-            EXPECT_EQ(item.first()->getSemantics(), item.second()->getSemantics());
+            const std::string errorMsg = " in property copy \'" +
+                                         item.first()->getClassIdentifier() +
+                                         "\' (base property: \'" + GetParam() + "\')";
+
+            EXPECT_EQ(item.first()->getIdentifier(), item.second()->getIdentifier())
+                << "Identifier mismatch" << errorMsg;
+            EXPECT_EQ(item.first()->getPath(), item.second()->getPath())
+                << "Property path mismatch" << errorMsg;
+            EXPECT_EQ(item.first()->getDisplayName(), item.second()->getDisplayName())
+                << "DisplayName mismatch" << errorMsg;
+            EXPECT_EQ(item.first()->getClassIdentifier(), item.second()->getClassIdentifier())
+                << "ClassIdentifier mismatch" << errorMsg;
+            EXPECT_EQ(item.first()->getSemantics(), item.second()->getSemantics())
+                << "Semantics mismatch" << errorMsg;
         }
     }
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     RegisteredProperties, PropertyCreationTests,
     ::testing::ValuesIn(InviwoApplication::getPtr()->getPropertyFactory()->getKeys()));
 }  // namespace inviwo

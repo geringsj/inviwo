@@ -3,7 +3,7 @@
  *
  * Inviwo - Interactive Visualization Workshop
  *
- * Copyright (c) 2014-2018 Inviwo Foundation
+ * Copyright (c) 2014-2019 Inviwo Foundation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -190,7 +190,7 @@ QVariant LinkDialogPropertyGraphicsItem::itemChange(GraphicsItemChange change,
                                                     const QVariant& value) {
     if (change == QGraphicsItem::ItemScenePositionHasChanged) {
         for (auto connection : connections_) {
-            connection->updateStartEndPoint();
+            connection->updateShape();
         }
     }
     return QGraphicsItem::itemChange(change, value);

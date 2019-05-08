@@ -2,7 +2,7 @@
  *
  * Inviwo - Interactive Visualization Workshop
  *
- * Copyright (c) 2018 Inviwo Foundation
+ * Copyright (c) 2018-2019 Inviwo Foundation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -72,17 +72,17 @@ IVW_CORE_API bool isSelected(const Processor* processor);
 IVW_CORE_API void setSelected(Processor* processor, bool selected);
 
 /**
- * A utility class to place processors on the "grid" in the editor 
- */ 
+ * A utility class to place processors on the "grid" in the editor
+ */
 struct IVW_CORE_API GridPos {
     GridPos(int x, int y) : pos_{x, y} {};
     explicit GridPos(ivec2 pos) : pos_{pos} {}
 
     operator ivec2() const { return pos_ * ivec2{25, 25}; }
+
 private:
     ivec2 pos_;
 };
-
 
 /**
  * A utility function to create a processor and set identifier, display name, and position
@@ -90,7 +90,7 @@ private:
  * @param args Any extra arguments to supply to the Processor constructor
  */
 template <typename T, typename... Args>
-std::unique_ptr<Processor> makeProcessor(ivec2 pos, Args&&... args) {
+std::unique_ptr<T> makeProcessor(ivec2 pos, Args&&... args) {
     auto name = ProcessorTraits<T>::getProcessorInfo().displayName;
     auto p = std::make_unique<T>(std::forward<Args>(args)...);
     if (p->getIdentifier().empty()) p->setIdentifier(name);
@@ -101,9 +101,7 @@ std::unique_ptr<Processor> makeProcessor(ivec2 pos, Args&&... args) {
     return std::move(p);
 }
 
-
-
-}
+}  // namespace util
 
 }  // namespace inviwo
 

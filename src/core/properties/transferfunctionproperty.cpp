@@ -2,7 +2,7 @@
  *
  * Inviwo - Interactive Visualization Workshop
  *
- * Copyright (c) 2013-2018 Inviwo Foundation
+ * Copyright (c) 2013-2019 Inviwo Foundation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,6 +30,7 @@
 #include <inviwo/core/properties/transferfunctionproperty.h>
 #include <inviwo/core/network/processornetwork.h>
 #include <inviwo/core/network/networklock.h>
+#include <inviwo/core/properties/isotfproperty.h>
 
 namespace inviwo {
 
@@ -223,18 +224,22 @@ void TransferFunctionProperty::set(const TransferFunction& value) {
     this->value_.value.addObserver(this);
 }
 
+void TransferFunctionProperty::set(const IsoTFProperty& p) { set(p.tf_.get()); }
+
 void TransferFunctionProperty::set(const Property* property) {
     if (auto tfp = dynamic_cast<const TransferFunctionProperty*>(property)) {
         TemplateProperty<TransferFunction>::set(tfp);
+    } else if (auto isotfprop = dynamic_cast<const IsoTFProperty*>(property)) {
+        TemplateProperty<TransferFunction>::set(&isotfprop->tf_);
     }
 }
 
-void TransferFunctionProperty::onTFPrimitiveAdded(TFPrimitive*) { propertyModified(); }
+void TransferFunctionProperty::onTFPrimitiveAdded(TFPrimitive&) { propertyModified(); }
 
-void TransferFunctionProperty::onTFPrimitiveRemoved(TFPrimitive*) { propertyModified(); }
+void TransferFunctionProperty::onTFPrimitiveRemoved(TFPrimitive&) { propertyModified(); }
 
-void TransferFunctionProperty::onTFPrimitiveChanged(const TFPrimitive*) { propertyModified(); }
+void TransferFunctionProperty::onTFPrimitiveChanged(const TFPrimitive&) { propertyModified(); }
 
-void TransferFunctionProperty::onTFTypeChanged(const TFPrimitiveSet*) { propertyModified(); }
+void TransferFunctionProperty::onTFTypeChanged(const TFPrimitiveSet&) { propertyModified(); }
 
 }  // namespace inviwo

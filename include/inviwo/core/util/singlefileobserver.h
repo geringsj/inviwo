@@ -2,7 +2,7 @@
  *
  * Inviwo - Interactive Visualization Workshop
  *
- * Copyright (c) 2013-2018 Inviwo Foundation
+ * Copyright (c) 2013-2019 Inviwo Foundation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -47,9 +47,12 @@ public:
     /**
      * Creates a file observer for filename and start observing that file
      */
-    SingleFileObserver(std::string filename);
+    SingleFileObserver(std::string filename = "");
     virtual ~SingleFileObserver();
 
+    void setFilename(const std::string& filename);
+    const std::string& getFilename() const;
+    
     /**
      * Start observing the file, not only needed to call if stop has been called in the first
      * place since the constructor calls start()
@@ -70,7 +73,6 @@ public:
      * Remove a callback from the list of callbacks
      */
     void removeOnChange(const BaseCallBack* callback);
-    const std::string& getFilename() const;
 
 private:
     virtual void fileChanged(const std::string& filename);
@@ -79,6 +81,6 @@ private:
     CallBackList onChangeCallbacks_;
 };
 
-}  // namespace
+}  // namespace inviwo
 
 #endif  // IVW_SIMPLEFILEOBSERVER_H

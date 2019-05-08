@@ -2,7 +2,7 @@
  *
  * Inviwo - Interactive Visualization Workshop
  *
- * Copyright (c) 2018 Inviwo Foundation
+ * Copyright (c) 2018-2019 Inviwo Foundation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,6 +29,7 @@
 
 #include <inviwo/core/properties/isovalueproperty.h>
 #include <inviwo/core/network/networklock.h>
+#include <inviwo/core/properties/isotfproperty.h>
 
 namespace inviwo {
 
@@ -161,23 +162,27 @@ void IsoValueProperty::set(const IsoValueCollection& c) {
     this->value_.value.addObserver(this);
 }
 
+void IsoValueProperty::set(const IsoTFProperty& p) { set(p.isovalues_.get()); }
+
 void IsoValueProperty::set(const Property* property) {
-    if (auto tfp = dynamic_cast<const IsoValueProperty*>(property)) {
-        TemplateProperty<IsoValueCollection>::set(tfp);
+    if (auto isoprop = dynamic_cast<const IsoValueProperty*>(property)) {
+        TemplateProperty<IsoValueCollection>::set(isoprop);
+    } else if (auto isotfprop = dynamic_cast<const IsoTFProperty*>(property)) {
+        TemplateProperty<IsoValueCollection>::set(&isotfprop->isovalues_);
     }
 }
 
-void IsoValueProperty::onTFPrimitiveAdded(TFPrimitive*) {
+void IsoValueProperty::onTFPrimitiveAdded(TFPrimitive&) {
     setInvalidationLevel(InvalidationLevel::InvalidResources);
     propertyModified();
 }
 
-void IsoValueProperty::onTFPrimitiveRemoved(TFPrimitive*) {
+void IsoValueProperty::onTFPrimitiveRemoved(TFPrimitive&) {
     setInvalidationLevel(InvalidationLevel::InvalidResources);
     propertyModified();
 }
 
-void IsoValueProperty::onTFPrimitiveChanged(const TFPrimitive*) {
+void IsoValueProperty::onTFPrimitiveChanged(const TFPrimitive&) {
     setInvalidationLevel(InvalidationLevel::InvalidOutput);
     propertyModified();
 }

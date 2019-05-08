@@ -2,7 +2,7 @@
  *
  * Inviwo - Interactive Visualization Workshop
  *
- * Copyright (c) 2013-2018 Inviwo Foundation
+ * Copyright (c) 2013-2019 Inviwo Foundation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ Mesh::Mesh(DrawType dt, ConnectivityType ct)
     : DataGroup<Mesh, MeshRepresentation>()
     , SpatialEntity<3>()
     , MetaDataOwner()
-    , meshInfo_(MeshInfo(dt, ct)) {}
+    , meshInfo_{dt, ct} {}
 
 Mesh::Mesh(const Mesh& rhs)
     : DataGroup<Mesh, MeshRepresentation>(rhs)
@@ -136,6 +136,18 @@ const BufferBase* Mesh::getBuffer(size_t idx) const {
     }
     return buffers_[idx].second.get();
 }
+
+std::pair<const BufferBase*, int> Mesh::findBuffer(BufferType type) const {
+    auto it = std::find_if(buffers_.begin(), buffers_.end(),
+                           [&](const auto& item) { return item.first.type == type; });
+    if (it != buffers_.end()) {
+        return {it->second.get(), it->first.location};
+    } else {
+        return {nullptr, 0};
+    }
+}
+
+bool Mesh::hasBuffer(BufferType type) const { return findBuffer(type).first != nullptr; }
 
 Mesh::BufferInfo Mesh::getBufferInfo(size_t idx) const {
     if (idx >= buffers_.size()) {
@@ -261,30 +273,19 @@ Document Mesh::getInfo() const {
     return doc;
 }
 
+template class IVW_CORE_TMPL_INST DataReaderType<Mesh>;
+template class IVW_CORE_TMPL_INST DataWriterType<Mesh>;
+
 namespace meshutil {
 
 bool hasPickIDBuffer(const Mesh* mesh) {
     if (!mesh) return false;
-    for (auto buffer : mesh->getBuffers()) {
-        // FIXME: this assumes the picking data to be stored at location 4
-        if ((buffer.first.type == BufferType::NumberOfBufferTypes) &&
-            (buffer.first.location == 4)) {
-            return true;
-        }
-    }
-    return false;
+    return mesh->hasBuffer(BufferType::PickingAttrib);
 }
 
 bool hasRadiiBuffer(const Mesh* mesh) {
     if (!mesh) return false;
-    for (auto buffer : mesh->getBuffers()) {
-        // FIXME: this assumes the radii to be stored at location 5
-        if ((buffer.first.type == BufferType::NumberOfBufferTypes) &&
-            (buffer.first.location == 5)) {
-            return true;
-        }
-    }
-    return false;
+    return mesh->hasBuffer(BufferType::RadiiAttrib);
 }
 
 }  // namespace meshutil

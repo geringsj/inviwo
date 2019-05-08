@@ -2,7 +2,7 @@
  *
  * Inviwo - Interactive Visualization Workshop
  *
- * Copyright (c) 2017-2018 Inviwo Foundation
+ * Copyright (c) 2017-2019 Inviwo Foundation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,6 +35,7 @@
 #include <inviwo/core/common/inviwoapplication.h>
 #include <modules/python3/python3module.h>
 #include <modules/python3/pythonscript.h>
+#include <modules/python3/pybindutils.h>
 
 #include <inviwo/core/datastructures/image/image.h>
 #include <inviwo/core/datastructures/image/layer.h>
@@ -53,9 +54,6 @@
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-#include <modules/python3/pybindutils.h>
-#include <modules/python3/python3module.h>
-#include <modules/python3/interface/pybuffer.h>
 
 #include <glm/gtc/epsilon.hpp>
 
@@ -109,8 +107,7 @@ TEST(Python3Scripts, PassValues) {
     script.run({{"a", pybind11::cast(a)},
                 {"b", pybind11::cast(b)},
                 {"c", pybind11::cast(c)},
-                {"d", pybind11::cast(d)}
-               },
+                {"d", pybind11::cast(d)}},
                [&](pybind11::dict dict) {
                    EXPECT_TRUE(pybind11::cast<bool>(dict["A"])) << "Pass value as int";
                    EXPECT_TRUE(pybind11::cast<bool>(dict["B"])) << "Pass value as float";
@@ -199,7 +196,7 @@ TEST(Python3Scripts, OptionPropertyTest) {
     script.run([&](pybind11::dict dict) {
         auto prop = dict["p"].cast<Property *>();
         ASSERT_TRUE(prop != nullptr);
-        auto optionProperty = dynamic_cast<OptionPropertyInt *>(prop);
+        auto optionProperty = static_cast<OptionPropertyInt *>(prop);
         ASSERT_TRUE(optionProperty != nullptr);
 
         EXPECT_STREQ("test", optionProperty->getIdentifier().c_str());

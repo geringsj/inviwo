@@ -5,49 +5,50 @@ ivw_module(Plotting)
 #--------------------------------------------------------------------
 # Add header files
 set(HEADER_FILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/datastructures/column.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/datastructures/dataframe.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/datastructures/dataframeutil.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/datastructures/datapoint.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/processors/csvsource.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/processors/dataframecolumntocolorvector.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/processors/dataframeexporter.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/processors/imagetodataframe.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/processors/syntheticdataframe.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/processors/volumesequencetodataframe.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/processors/volumetodataframe.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/properties/axisproperty.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/properties/dataframeproperty.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/properties/marginproperty.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/properties/plottextproperty.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/properties/tickproperty.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/utils/axisutils.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/utils/csvreader.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/utils/statsutils.h
+    include/modules/plotting/datastructures/axisdata.h
+    include/modules/plotting/datastructures/axissettings.h
+    include/modules/plotting/datastructures/majortickdata.h
+    include/modules/plotting/datastructures/majorticksettings.h
+    include/modules/plotting/datastructures/minortickdata.h
+    include/modules/plotting/datastructures/minorticksettings.h
+    include/modules/plotting/datastructures/plottextdata.h
+    include/modules/plotting/datastructures/plottextsettings.h
+    include/modules/plotting/plottingmodule.h
+    include/modules/plotting/plottingmoduledefine.h
+    include/modules/plotting/processors/dataframecolumntocolorvector.h
+    include/modules/plotting/properties/axisproperty.h
+    include/modules/plotting/properties/categoricalaxisproperty.h
+    include/modules/plotting/properties/dataframeproperty.h
+    include/modules/plotting/properties/marginproperty.h
+    include/modules/plotting/properties/optionconverter.h
+    include/modules/plotting/properties/plottextproperty.h
+    include/modules/plotting/properties/tickproperty.h
+    include/modules/plotting/utils/axisutils.h
+    include/modules/plotting/utils/statsutils.h
 )
 ivw_group("Header Files" ${HEADER_FILES})
 
 #--------------------------------------------------------------------
 # Add source files
 set(SOURCE_FILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/datastructures/column.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/datastructures/dataframe.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/datastructures/dataframeutil.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/processors/csvsource.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/processors/dataframecolumntocolorvector.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/processors/dataframeexporter.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/processors/imagetodataframe.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/processors/syntheticdataframe.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/processors/volumesequencetodataframe.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/processors/volumetodataframe.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/properties/axisproperty.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/properties/dataframeproperty.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/properties/marginproperty.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/properties/plottextproperty.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/properties/tickproperty.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/utils/axisutils.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/utils/csvreader.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/utils/statsutils.cpp
+    src/datastructures/axisdata.cpp
+    src/datastructures/axissettings.cpp
+    src/datastructures/majortickdata.cpp
+    src/datastructures/majorticksettings.cpp
+    src/datastructures/minortickdata.cpp
+    src/datastructures/minorticksettings.cpp
+    src/datastructures/plottextdata.cpp
+    src/datastructures/plottextsettings.cpp
+    src/plottingmodule.cpp
+    src/processors/dataframecolumntocolorvector.cpp
+    src/properties/axisproperty.cpp
+    src/properties/categoricalaxisproperty.cpp
+    src/properties/dataframeproperty.cpp
+    src/properties/marginproperty.cpp
+    src/properties/plottextproperty.cpp
+    src/properties/tickproperty.cpp
+    src/utils/axisutils.cpp
+    src/utils/statsutils.cpp
 )
 ivw_group("Source Files" ${SOURCE_FILES})
 
@@ -55,7 +56,6 @@ ivw_group("Source Files" ${SOURCE_FILES})
 #--------------------------------------------------------------------
 # Add shaders
 set(SHADER_FILES
-    #${CMAKE_CURRENT_SOURCE_DIR}/glsl/plottingprocessor.frag
 )
 ivw_group("Shader Files" ${SHADER_FILES})
 
@@ -63,9 +63,8 @@ ivw_group("Shader Files" ${SHADER_FILES})
 #--------------------------------------------------------------------
 # Add Unittests
 set(TEST_FILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/tests/unittests/plotting-unittest-main.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/tests/unittests/stats-test.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/tests/unittests/csvreader-test.cpp
+    tests/unittests/plotting-unittest-main.cpp
+    tests/unittests/stats-test.cpp
 )
 ivw_add_unittest(${TEST_FILES})
 

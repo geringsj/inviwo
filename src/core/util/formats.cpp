@@ -2,7 +2,7 @@
  *
  * Inviwo - Interactive Visualization Workshop
  *
- * Copyright (c) 2013-2018 Inviwo Foundation
+ * Copyright (c) 2013-2019 Inviwo Foundation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -119,7 +119,7 @@ const DataFormatBase* DataFormatBase::getPointer(DataFormatId id) {
             std::make_unique<DataFormatBase>(DataFormatId::NotSpecialized, 0, 0, 0.0, 0.0, 0.0,
                                              NumericType::NotSpecialized, "NotSpecialized");
         util::for_each_type<DefaultDataFormats>{}(AddInstance{}, res);
-        return std::move(res);
+        return res;
     }();
 
     return instances[static_cast<int>(id)].get();

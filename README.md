@@ -19,7 +19,7 @@ Below follow some general information about the framework:
  - The core is written in C/C++ only, with minor dependencies.
  
 #### Modules
- - Modern graphics programming through OpenGL (>= 3.2 Core) related modules.
+ - Modern graphics programming through OpenGL (>= 3.3 Core) related modules.
  - Parallel computing on multiple platforms (GPU/CPU) through OpenCL (>= 1.0) related modules.
  - Python (> 3.2) scripting and computation is supported through provided modules.
 
@@ -36,6 +36,8 @@ Below follow some general information about the framework:
   - [Manual](https://github.com/inviwo/inviwo/wiki/Manual)
   - [API](https://inviwo.github.io/inviwo/doc/)
   - [Changelog](/CHANGELOG.md)
+
+For help and general discussion join us on our [Slack](https://join.slack.com/t/inviwo/shared_invite/enQtNTc2Nzc2NDQwNzIxLWM0N2VlYmNiZGU2MThiY2I5MGMwZTc3NzI2MjRkODg2M2NmMzRlYjRhNjU3YzUwNGQ1OWE0ZGE1NTAwZGU2YzI) server 
 
 #### Sponsors
 This work was supported by Linköping University,  KTH Royal Institute of Technology, Ulm University, and through grants from the Swedish e-Science Research Centre (SeRC).

@@ -2,7 +2,7 @@
  *
  * Inviwo - Interactive Visualization Workshop
  *
- * Copyright (c) 2014-2018 Inviwo Foundation
+ * Copyright (c) 2014-2019 Inviwo Foundation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,10 +36,13 @@
 #include <inviwo/core/datastructures/image/imagetypes.h>
 #include <inviwo/core/datastructures/image/layerrepresentation.h>
 
+#include <inviwo/core/io/datareader.h>
+#include <inviwo/core/io/datawriter.h>
+
 namespace inviwo {
 
 /**
- * \ingroup datastructures	
+ * \ingroup datastructures
  */
 class IVW_CORE_API Layer : public Data<Layer, LayerRepresentation>, public StructuredGridEntity<2> {
 public:
@@ -79,11 +82,11 @@ public:
         const std::string& fileExtension) const;
 
     /**
-    * \brief update the swizzle mask of the channels for sampling color layers
-    * The swizzle mask is only affecting Color layers.
-    *
-    * @param mask new swizzle mask
-    */
+     * \brief update the swizzle mask of the channels for sampling color layers
+     * The swizzle mask is only affecting Color layers.
+     *
+     * @param mask new swizzle mask
+     */
     void setSwizzleMask(const SwizzleMask& mask);
     SwizzleMask getSwizzleMask() const;
 
@@ -94,17 +97,21 @@ private:
     friend class LayerRepresentation;
 
     /**
-    * \brief update the internal state of the layer based on the given representation
-    * This will affect layer type, dimension, and swizzle mask.
-    *
-    * @param layerRep    layer representation of which the values will be taken from
-    */
+     * \brief update the internal state of the layer based on the given representation
+     * This will affect layer type, dimension, and swizzle mask.
+     *
+     * @param layerRep    layer representation of which the values will be taken from
+     */
     void updateMetaFromRepresentation(const LayerRepresentation* layerRep);
 
     LayerType layerType_;
     SwizzleMask swizzleMask_;
 };
 
-}  // namespace
+// https://docs.microsoft.com/en-us/cpp/cpp/general-rules-and-limitations?view=vs-2017
+extern template class IVW_CORE_TMPL_EXP DataReaderType<Layer>;
+extern template class IVW_CORE_TMPL_EXP DataWriterType<Layer>;
+
+}  // namespace inviwo
 
 #endif  // IVW_LAYER_H

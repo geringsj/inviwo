@@ -1,34 +1,31 @@
-#ifndef GLSL_VERSION_150
-#extension GL_EXT_gpu_shader4 : enable
-#extension GL_EXT_geometry_shader4 : enable
-#endif
 
 #include "pcp_common.glsl"
+#include "utils/pickingutils.glsl"
 
 layout(lines) in;
 layout(triangle_strip, max_vertices = 24) out;
 
-in vec3 pickColor[2];
-in vec2 texCoord[2];
+in float vScalarMeta[2];
+flat in uint vPicking[2];
+
 vec4 triverts[4];
 float signValues[4];
 
-out vec3 lpickColor;
-out vec2 ltexCoord;
-out float lfalloffAlpha;
+out vec4 lPickColor;
+out float lScalarMeta;
+out float lFalloffAlpha;
 
-uniform float lineWidth;
+uniform float lineWidth = 3;
 
-uniform int selected;
-uniform float selectedLineWidth = 3;
 
 void emitV(int i) {
     gl_Position = triverts[i];
-    lfalloffAlpha = signValues[i];
-    lpickColor = pickColor[i % 2].rgb;
-    ltexCoord = texCoord[i % 2].xy;
+    lFalloffAlpha = signValues[i];
+    lPickColor = vec4(pickingIndexToColor(vPicking[i % 2]), vPicking[i % 2] == 0 ? 0.0 : 1.0);
+    lScalarMeta = vScalarMeta[i % 2];
     EmitVertex();
 }
+
 
 void emit(int a, int b, int c, int d) {
     emitV(a);
@@ -42,25 +39,19 @@ void main() {
     // Compute orientation vectors for the two connecting faces:
     vec4 p[2];
 
-#ifndef GLSL_VERSION_150
-    p[0] = gl_PositionIn[0];
-    p[1] = gl_PositionIn[1];
-#else
     p[0] = gl_in[0].gl_Position;
     p[1] = gl_in[1].gl_Position;
-#endif
 
-    //* selected * selectedLineWidth
-    // Assuming 2d
-    vec3 j = vec3(0, 1, 0);
-    float r = lineWidth * getPixelSpacing().y;
-    if (selected == 1) {
-        r = selectedLineWidth * getPixelSpacing().y;
-    } else {
-        r = lineWidth * getPixelSpacing().y;
-    }
+    // Create a vector that is orthogonal to the line
+    vec3 orthogonalLine = p[0].xyz - p[1].xyz;
+    orthogonalLine = normalize(vec3(orthogonalLine.y, -orthogonalLine.x, orthogonalLine.z));
 
-    j = vec3(0, r, 0);
+    // Scale the linewidth with the window dimensions
+    float r1 = lineWidth * getPixelSpacing().x;
+    float r2 = lineWidth * getPixelSpacing().y;
+
+    // Scale the orthogonal vector with the linewidth
+    vec3 j = vec3(orthogonalLine.x * r1, orthogonalLine.y * r2, orthogonalLine.z);
 
     // Compute upper triangles
     signValues[0] = 1.0;

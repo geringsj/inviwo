@@ -2,7 +2,7 @@
  *
  * Inviwo - Interactive Visualization Workshop
  *
- * Copyright (c) 2013-2018 Inviwo Foundation
+ * Copyright (c) 2013-2019 Inviwo Foundation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -78,7 +78,7 @@ bool operator==(const BufferBase &bufA, const BufferBase &bufB) {
     }
 
     return bufA.getRepresentation<BufferRAM>()->dispatch<bool>([&](const auto buffer) {
-        using ValueType = util::PrecsionValueType<decltype(buffer)>;
+        using ValueType = util::PrecisionValueType<decltype(buffer)>;
 
         auto containerA = buffer->getDataContainer();
         auto bufBRAM = bufB.getRepresentation<BufferRAM>();
