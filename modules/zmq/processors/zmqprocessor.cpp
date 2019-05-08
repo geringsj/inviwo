@@ -86,14 +86,14 @@ Zmq::Zmq()
 
     // Add the stereo camera right away
     // Create a new Composite Property with the matching address
-    CompositeProperty* newComp = new CompositeProperty("camera", "Stereo Camera");
-    CompositeProperty* newMirror = new CompositeProperty("camera", "Stereo Camera");
+    //CompositeProperty* newComp = new CompositeProperty("camera", "Stereo Camera");
+    //CompositeProperty* newMirror = new CompositeProperty("camera", "Stereo Camera");
     // Create the PropertyMapping for later modifications
-    PropMapping* pm = new PropMapping("camera", "Stereo Camera", newComp, newMirror);
-    addStereoCameraProperty(newComp, newMirror);
+    //PropMapping* pm = new PropMapping("camera", "Stereo Camera", newComp, newMirror);
+    //addStereoCameraProperty(newComp, newMirror);
     // Add the new Property
-    additionalProps.push_back(pm);
-    addProperty(pm->property);
+    //additionalProps.push_back(pm);
+    //addProperty(pm->property);
 
     // Start the thread that listens to ZMQ messages
     thread_ = std::thread(&Zmq::receiveZMQ, this);
