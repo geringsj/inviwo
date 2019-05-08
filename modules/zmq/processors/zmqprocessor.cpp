@@ -47,8 +47,8 @@ void PropMapping::serialize(Serializer& s) const {
 void PropMapping::deserialize(Deserializer& d) {
 	d.deserialize("address", address);
     d.deserialize("type", type);
-    d.deserialize("property", property);
-    d.deserialize("mirror", mirror);
+    d.deserializeAs<inviwo::Property>("property", property);
+    d.deserializeAs<inviwo::Property>("mirror", mirror);
 }
 
 const ProcessorInfo Zmq::processorInfo_{
@@ -310,77 +310,102 @@ void Zmq::addSelectedProperty() {
         // Add the new Property
         additionalProps.push_back(pm);
         addProperty(pm->property.get());
-        pm->property->setSerializationMode(PropertySerializationMode::None);
+        pm->property->setSerializationMode(PropertySerializationMode::All);
+        pm->mirror->setSerializationMode(PropertySerializationMode::All);
     } else {
         LogWarn("Please Specify a Name and Adress for your new Property.")
     }
 }
 
 void Zmq::addFloatProperty(CompositeProperty* newComp, CompositeProperty* newMirror) {
-    newComp->addProperty(new FloatProperty("value", "Value", 0.0, -10000.0, 10000.0));
-    newMirror->addProperty(new FloatProperty("value", "Value", 0.0, -10000.0, 10000.0));
+    FloatProperty* newProp = new FloatProperty("value", "Value", 0.0, -10000.0, 10000.0);
+    newProp->setSerializationMode(PropertySerializationMode::All);
+    FloatProperty* newMirrorProp = new FloatProperty("value", "Value", 0.0, -10000.0, 10000.0);
+    newMirrorProp->setSerializationMode(PropertySerializationMode::All);
+    newComp->addProperty(newProp);
+    newMirror->addProperty(newMirrorProp);
 }
 
 void Zmq::addIntProperty(CompositeProperty* newComp, CompositeProperty* newMirror) {
-    newComp->addProperty(new IntProperty("value", "Value", 0, -10000, 10000));
-    newMirror->addProperty(new IntProperty("value", "Value", 0, -10000, 10000));
+    IntProperty* newProp = new IntProperty("value", "Value", 0, -10000, 10000); 
+    newProp->setSerializationMode(PropertySerializationMode::All);
+	IntProperty* newMirrorProp = new IntProperty("value", "Value", 0, -10000, 10000);
+    newMirrorProp->setSerializationMode(PropertySerializationMode::All);
+    newComp->addProperty(newProp);
+    newMirror->addProperty(newMirrorProp);
 }
 
 void Zmq::addIntVec2Property(CompositeProperty* newComp, CompositeProperty* newMirror) {
-    newComp->addProperty(
-        new IntVec2Property("value", "Value", ivec2(0), -ivec2(10000), ivec2(10000)));
-    newMirror->addProperty(
-        new IntVec2Property("value", "Value", ivec2(0), -ivec2(10000), ivec2(10000)));
+    IntVec2Property* newProp = new IntVec2Property("value", "Value", ivec2(0), -ivec2(10000), ivec2(10000));
+    newProp->setSerializationMode(PropertySerializationMode::All);
+    IntVec2Property* newMirrorProp = new IntVec2Property("value", "Value", ivec2(0), -ivec2(10000), ivec2(10000));
+    newMirrorProp->setSerializationMode(PropertySerializationMode::All);
+    newComp->addProperty(newProp);
+    newMirror->addProperty(newMirrorProp);
 }
 
 void Zmq::addFloatVec3Property(CompositeProperty* newComp, CompositeProperty* newMirror) {
-    newComp->addProperty(new FloatVec3Property("value", "Value", vec3(0.0f), -vec3(10000.0f),
-                                               vec3(10000.0f), vec3(0.01f)));
-    newMirror->addProperty(new FloatVec3Property("value", "Value", vec3(0.0f), -vec3(10000.0f),
-                                                 vec3(10000.0f), vec3(0.01f)));
+    FloatVec3Property* newProp = new FloatVec3Property("value", "Value", vec3(0.0f), -vec3(10000.0f), vec3(10000.0f), vec3(0.01f));
+    newProp->setSerializationMode(PropertySerializationMode::All);
+    FloatVec3Property* newMirrorProp = new FloatVec3Property("value", "Value", vec3(0.0f), -vec3(10000.0f), vec3(10000.0f), vec3(0.01f));
+    newMirrorProp->setSerializationMode(PropertySerializationMode::All);
+    newComp->addProperty(newProp);
+    newMirror->addProperty(newMirrorProp);
 }
 
 void Zmq::addStereoCameraProperty(CompositeProperty* newComp, CompositeProperty* newMirror) {
     // Left Camera
     CompositeProperty* cameraL = new CompositeProperty("camparamsL", "Camera Parameters L");
-    cameraL->addProperty(new FloatVec3Property(
-        "lookFromL", "Look From L", vec3(1.0f), -vec3(1000.0f), vec3(1000.0f), vec3(0.0001f),
-        InvalidationLevel::Valid, PropertySemantics("Spherical")));
-    cameraL->addProperty(new FloatVec3Property("lookToL", "Look to L", vec3(0.0f), -vec3(100.0f),
-                                               vec3(100.0f), vec3(0.1f)));
-    cameraL->addProperty(new FloatVec3Property("lookUpL", "Look up L", vec3(0.0f, 1.0f, 0.0f),
-                                               -vec3(100.0f), vec3(100.0f), vec3(0.1f)));
+    cameraL->setSerializationMode(PropertySerializationMode::All);
+    FloatVec3Property* newFromPropL = new FloatVec3Property( "lookFromL", "Look From L", vec3(1.0f), -vec3(1000.0f), vec3(1000.0f), vec3(0.0001f), InvalidationLevel::Valid, PropertySemantics("Spherical"));
+    newFromPropL->setSerializationMode(PropertySerializationMode::All);
+    FloatVec3Property* newToPropL = new FloatVec3Property("lookToL", "Look to L", vec3(0.0f), -vec3(100.0f), vec3(100.0f), vec3(0.1f));
+    newToPropL->setSerializationMode(PropertySerializationMode::All);
+    FloatVec3Property* newUpPropL = new FloatVec3Property("lookUpL", "Look up L", vec3(0.0f, 1.0f, 0.0f), -vec3(100.0f), vec3(100.0f), vec3(0.1f));
+    newUpPropL->setSerializationMode(PropertySerializationMode::All);
+    cameraL->addProperty(newFromPropL);
+    cameraL->addProperty(newToPropL);
+    cameraL->addProperty(newUpPropL);
     newComp->addProperty(cameraL);
     // Left Camera Mirror
     CompositeProperty* cameraLMirror = new CompositeProperty("camparamsL", "Camera Parameters L");
-    cameraLMirror->addProperty(new FloatVec3Property(
-        "lookFromL", "Look From L", vec3(1.0f), -vec3(1000.0f), vec3(1000.0f), vec3(0.0001f),
-        InvalidationLevel::Valid, PropertySemantics("Spherical")));
-    cameraLMirror->addProperty(new FloatVec3Property("lookToL", "Look to L", vec3(0.0f),
-                                                     -vec3(100.0f), vec3(100.0f), vec3(0.1f)));
-    cameraLMirror->addProperty(new FloatVec3Property("lookUpL", "Look up L", vec3(0.0f, 1.0f, 0.0f),
-                                                     -vec3(100.0f), vec3(100.0f), vec3(0.1f)));
+    cameraLMirror->setSerializationMode(PropertySerializationMode::All);
+    FloatVec3Property* newFromPropLMirror = new FloatVec3Property( "lookFromL", "Look From L", vec3(1.0f), -vec3(1000.0f), vec3(1000.0f), vec3(0.0001f), InvalidationLevel::Valid, PropertySemantics("Spherical"));
+    newFromPropLMirror->setSerializationMode(PropertySerializationMode::All);
+    FloatVec3Property* newToPropLMirror = new FloatVec3Property("lookToL", "Look to L", vec3(0.0f), -vec3(100.0f), vec3(100.0f), vec3(0.1f));
+    newToPropLMirror->setSerializationMode(PropertySerializationMode::All);
+    FloatVec3Property* newUpPropLMirror = new FloatVec3Property("lookUpL", "Look up L", vec3(0.0f, 1.0f, 0.0f), -vec3(100.0f), vec3(100.0f), vec3(0.1f));
+    newUpPropLMirror->setSerializationMode(PropertySerializationMode::All);
+    cameraLMirror->addProperty(newFromPropLMirror);
+    cameraLMirror->addProperty(newToPropLMirror);
+    cameraLMirror->addProperty(newUpPropLMirror);
     newMirror->addProperty(cameraLMirror);
 
     // Right Camera
     CompositeProperty* cameraR = new CompositeProperty("camparamsR", "Camera Parameters R");
-    cameraR->addProperty(new FloatVec3Property(
-        "lookFromR", "Look From R", vec3(1.0f), -vec3(1000.0f), vec3(1000.0f), vec3(0.0001f),
-        InvalidationLevel::Valid, PropertySemantics("Spherical")));
-    cameraR->addProperty(new FloatVec3Property("lookToR", "Look to R", vec3(0.0f), -vec3(100.0f),
-                                               vec3(100.0f), vec3(0.1f)));
-    cameraR->addProperty(new FloatVec3Property("lookUpR", "Look up R", vec3(0.0f, 1.0f, 0.0f),
-                                               -vec3(100.0f), vec3(100.0f), vec3(0.1f)));
+    cameraR->setSerializationMode(PropertySerializationMode::All);
+    FloatVec3Property* newFromPropR = new FloatVec3Property( "lookFromR", "Look From R", vec3(1.0f), -vec3(1000.0f), vec3(1000.0f), vec3(0.0001f), InvalidationLevel::Valid, PropertySemantics("Spherical"));
+    newFromPropR->setSerializationMode(PropertySerializationMode::All);
+    FloatVec3Property* newToPropR = new FloatVec3Property("lookToR", "Look to R", vec3(0.0f), -vec3(100.0f), vec3(100.0f), vec3(0.1f));
+    newToPropR->setSerializationMode(PropertySerializationMode::All);
+    FloatVec3Property* newUpPropR = new FloatVec3Property("lookUpR", "Look up R", vec3(0.0f, 1.0f, 0.0f), -vec3(100.0f), vec3(100.0f), vec3(0.1f));
+    newUpPropR->setSerializationMode(PropertySerializationMode::All);
+    cameraR->addProperty(newFromPropR);
+    cameraR->addProperty(newToPropR);
+    cameraR->addProperty(newUpPropR);
     newComp->addProperty(cameraR);
     // Right Camera Mirror
     CompositeProperty* cameraRMirror = new CompositeProperty("camparamsR", "Camera Parameters R");
-    cameraRMirror->addProperty(new FloatVec3Property(
-        "lookFromR", "Look From R", vec3(1.0f), -vec3(1000.0f), vec3(1000.0f), vec3(0.0001f),
-        InvalidationLevel::Valid, PropertySemantics("Spherical")));
-    cameraRMirror->addProperty(new FloatVec3Property("lookToR", "Look to R", vec3(0.0f),
-                                                     -vec3(100.0f), vec3(100.0f), vec3(0.1f)));
-    cameraRMirror->addProperty(new FloatVec3Property("lookUpR", "Look up R", vec3(0.0f, 1.0f, 0.0f),
-                                                     -vec3(100.0f), vec3(100.0f), vec3(0.1f)));
+    cameraRMirror->setSerializationMode(PropertySerializationMode::All);
+    FloatVec3Property* newFromPropRMirror = new FloatVec3Property( "lookFromR", "Look From R", vec3(1.0f), -vec3(1000.0f), vec3(1000.0f), vec3(0.0001f), InvalidationLevel::Valid, PropertySemantics("Spherical"));
+    newFromPropRMirror->setSerializationMode(PropertySerializationMode::All);
+    FloatVec3Property* newToPropRMirror = new FloatVec3Property("lookToR", "Look to R", vec3(0.0f), -vec3(100.0f), vec3(100.0f), vec3(0.1f));
+    newToPropRMirror->setSerializationMode(PropertySerializationMode::All);
+    FloatVec3Property* newUpPropRMirror = new FloatVec3Property("lookUpR", "Look up R", vec3(0.0f, 1.0f, 0.0f), -vec3(100.0f), vec3(100.0f), vec3(0.1f));
+    newUpPropRMirror->setSerializationMode(PropertySerializationMode::All);
+    cameraRMirror->addProperty(newFromPropRMirror);
+    cameraRMirror->addProperty(newToPropRMirror);
+    cameraRMirror->addProperty(newUpPropRMirror);
     newMirror->addProperty(cameraRMirror);
 }
 
