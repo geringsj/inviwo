@@ -50,6 +50,7 @@ class PropMapping : public Serializable {
 public:
     PropMapping(std::string address, std::string type, CompositeProperty* property,
                 CompositeProperty* mirror);
+    PropMapping() = default;
     virtual ~PropMapping() = default;
 
     virtual void serialize(Serializer& s) const override;
