@@ -112,31 +112,20 @@ void Zmq::receiveZMQ() {
         // Address Message:
         zmq::message_t address;
         zmq_socket.recv(&address);
-        std::string address_string =
-            std::string(static_cast<char*>(address.data()), address.size());
+        std::string address_string = std::string(static_cast<char*>(address.data()), address.size());
 
         // Content Message:
         zmq::message_t message;
         zmq_socket.recv(&message);
-        std::string message_string =
-            std::string(static_cast<char*>(message.data()), message.size());
+        std::string message_string = std::string(static_cast<char*>(message.data()), message.size());
 
 		if (address_string != "") {
-            try {
-                parseMessage(address_string,
-                             json::parse(message_string));  // Parse all the messages and change the
-                                                            // Mirrors accordingly
-            } catch (...) {
-                // Sometimes, the address and message contain incorrect values. This is a HACK to
-                // catch them. It is not a clean solution and should be changed!
-            }
+            parseMessage(address_string, json::parse(message_string));  // Parse all the messages and change the Mirrors accordingly
 
-            if (future_.wait_for(std::chrono::milliseconds(0)) ==
-                std::future_status::ready) {  // If the UI is ready
-                future_ =
-                    dispatchFront([this, address_string, message_string]() {  // Go to the UI Thread
-                        updateUI();                                           // Update the UI
-                    });
+            if (future_.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready) {  // If the UI is ready
+                future_ = dispatchFront([this, address_string, message_string]() {  // Go to the UI Thread
+                    updateUI();  // Update the UI
+                });
             }
 		}
     }
@@ -150,51 +139,23 @@ void Zmq::updateUI() {
         PropMapping* pm = *i;
         if (pm->type == "Stereo Camera") {
             // Update Left Eye
-            dynamic_cast<FloatVec3Property*>(
-                pm->property->getPropertyByIdentifier("lookFromL", true))
-                ->set(dynamic_cast<FloatVec3Property*>(
-                          pm->mirror->getPropertyByIdentifier("lookFromL", true))
-                          ->get());
-            dynamic_cast<FloatVec3Property*>(pm->property->getPropertyByIdentifier("lookToL", true))
-                ->set(dynamic_cast<FloatVec3Property*>(
-                          pm->mirror->getPropertyByIdentifier("lookToL", true))
-                          ->get());
-            dynamic_cast<FloatVec3Property*>(pm->property->getPropertyByIdentifier("lookUpL", true))
-                ->set(dynamic_cast<FloatVec3Property*>(
-                          pm->mirror->getPropertyByIdentifier("lookUpL", true))
-                          ->get());
+            dynamic_cast<FloatVec3Property*>(pm->property->getPropertyByIdentifier("lookFromL", true))->set(dynamic_cast<FloatVec3Property*>(pm->mirror->getPropertyByIdentifier("lookFromL", true))->get());
+            dynamic_cast<FloatVec3Property*>(pm->property->getPropertyByIdentifier("lookToL", true))->set(dynamic_cast<FloatVec3Property*>(pm->mirror->getPropertyByIdentifier("lookToL", true))->get());
+            dynamic_cast<FloatVec3Property*>(pm->property->getPropertyByIdentifier("lookUpL", true))->set(dynamic_cast<FloatVec3Property*>(pm->mirror->getPropertyByIdentifier("lookUpL", true))->get());
             // Update Right Eye
-            dynamic_cast<FloatVec3Property*>(
-                pm->property->getPropertyByIdentifier("lookFromR", true))
-                ->set(dynamic_cast<FloatVec3Property*>(
-                          pm->mirror->getPropertyByIdentifier("lookFromR", true))
-                          ->get());
-            dynamic_cast<FloatVec3Property*>(pm->property->getPropertyByIdentifier("lookToR", true))
-                ->set(dynamic_cast<FloatVec3Property*>(
-                          pm->mirror->getPropertyByIdentifier("lookToR", true))
-                          ->get());
-            dynamic_cast<FloatVec3Property*>(pm->property->getPropertyByIdentifier("lookUpR", true))
-                ->set(dynamic_cast<FloatVec3Property*>(
-                          pm->mirror->getPropertyByIdentifier("lookUpR", true))
-                          ->get());
+            dynamic_cast<FloatVec3Property*>(pm->property->getPropertyByIdentifier("lookFromR", true))->set(dynamic_cast<FloatVec3Property*>(pm->mirror->getPropertyByIdentifier("lookFromR", true))->get());
+            dynamic_cast<FloatVec3Property*>(pm->property->getPropertyByIdentifier("lookToR", true))->set(dynamic_cast<FloatVec3Property*>(pm->mirror->getPropertyByIdentifier("lookToR", true))->get());
+            dynamic_cast<FloatVec3Property*>(pm->property->getPropertyByIdentifier("lookUpR", true))->set(dynamic_cast<FloatVec3Property*>(pm->mirror->getPropertyByIdentifier("lookUpR", true))->get());
         } else if (pm->type == "Bool") {
             dynamic_cast<BoolProperty*>(pm->property->getPropertyByIdentifier("value"))->set(dynamic_cast<BoolProperty*>(pm->mirror->getPropertyByIdentifier("value"))->get());
         } else if (pm->type == "Float") {
-            dynamic_cast<FloatProperty*>(pm->property->getPropertyByIdentifier("value"))
-                ->set(dynamic_cast<FloatProperty*>(pm->mirror->getPropertyByIdentifier("value"))
-                          ->get());
+            dynamic_cast<FloatProperty*>(pm->property->getPropertyByIdentifier("value"))->set(dynamic_cast<FloatProperty*>(pm->mirror->getPropertyByIdentifier("value"))->get());
         } else if (pm->type == "Int") {
-            dynamic_cast<IntProperty*>(pm->property->getPropertyByIdentifier("value"))
-                ->set(dynamic_cast<IntProperty*>(pm->mirror->getPropertyByIdentifier("value"))
-                          ->get());
+            dynamic_cast<IntProperty*>(pm->property->getPropertyByIdentifier("value"))->set(dynamic_cast<IntProperty*>(pm->mirror->getPropertyByIdentifier("value"))->get());
         } else if (pm->type == "IntVec2") {
-            dynamic_cast<IntVec2Property*>(pm->property->getPropertyByIdentifier("value"))
-                ->set(dynamic_cast<IntVec2Property*>(pm->mirror->getPropertyByIdentifier("value"))
-                          ->get());
+            dynamic_cast<IntVec2Property*>(pm->property->getPropertyByIdentifier("value"))->set(dynamic_cast<IntVec2Property*>(pm->mirror->getPropertyByIdentifier("value"))->get());
         } else if (pm->type == "FloatVec3") {
-            dynamic_cast<FloatVec3Property*>(pm->property->getPropertyByIdentifier("value"))
-                ->set(dynamic_cast<FloatVec3Property*>(pm->mirror->getPropertyByIdentifier("value"))
-                          ->get());
+            dynamic_cast<FloatVec3Property*>(pm->property->getPropertyByIdentifier("value"))->set(dynamic_cast<FloatVec3Property*>(pm->mirror->getPropertyByIdentifier("value"))->get());
         }
     }
 }
