@@ -72,6 +72,7 @@ Zmq::Zmq()
 
     // Allow adding properties to the processor
     addProperty(addParam_);
+    type_.addOption("Bool", "Bool");
     type_.addOption("Float", "Float");
     type_.addOption("Int", "Int");
     type_.addOption("IntVec2", "IntVec2");
@@ -176,6 +177,8 @@ void Zmq::updateUI() {
                 ->set(dynamic_cast<FloatVec3Property*>(
                           pm->mirror->getPropertyByIdentifier("lookUpR", true))
                           ->get());
+        } else if (pm->type == "Bool") {
+            dynamic_cast<BoolProperty*>(pm->property->getPropertyByIdentifier("value"))->set(dynamic_cast<BoolProperty*>(pm->mirror->getPropertyByIdentifier("value"))->get());
         } else if (pm->type == "Float") {
             dynamic_cast<FloatProperty*>(pm->property->getPropertyByIdentifier("value"))
                 ->set(dynamic_cast<FloatProperty*>(pm->mirror->getPropertyByIdentifier("value"))
@@ -202,6 +205,8 @@ void Zmq::parseMessage(std::string address, json content) {
         if (pm->address == address) {
             if (pm->type == "Stereo Camera") {
                 parseStereoCameraMessage(pm, content);
+            } else if (pm->type == "Bool") {
+                parseBoolMessage(pm, content);
             } else if (pm->type == "Float") {
                 parseFloatMessage(pm, content);
             } else if (pm->type == "Int") {
@@ -257,6 +262,11 @@ void Zmq::parseStereoCameraMessage(PropMapping* prop, json content) {
         ->set(upR);
 }
 
+void Zmq::parseBoolMessage(PropMapping* prop, json content) {
+    bool value = content["value"];
+    dynamic_cast<BoolProperty*>(prop->mirror->getPropertyByIdentifier("value"))->set(value);
+}
+
 void Zmq::parseFloatMessage(PropMapping* prop, json content) {
     float value = content["value"];
     dynamic_cast<FloatProperty*>(prop->mirror->getPropertyByIdentifier("value"))->set(value);
@@ -287,7 +297,9 @@ void Zmq::addSelectedProperty() {
 
         // Add type-specific props
         std::string selectedType = type_.getSelectedDisplayName();
-        if (selectedType == "Float") {
+        if (selectedType == "Bool") {
+            addBoolProperty(newComp, newMirror);
+		} else if (selectedType == "Float") {
             addFloatProperty(newComp, newMirror);
         } else if (selectedType == "Int") {
             addIntProperty(newComp, newMirror);
@@ -307,6 +319,15 @@ void Zmq::addSelectedProperty() {
     } else {
         LogWarn("Please Specify a Name and Adress for your new Property.")
     }
+}
+
+void Zmq::addBoolProperty(CompositeProperty* newComp, CompositeProperty* newMirror) {
+    BoolProperty* newProp = new BoolProperty("value", "Value", false);
+    newProp->setSerializationMode(PropertySerializationMode::All);
+    BoolProperty* newMirrorProp = new BoolProperty("value", "Value", false);
+    newMirrorProp->setSerializationMode(PropertySerializationMode::All);
+    newComp->addProperty(newProp);
+    newMirror->addProperty(newMirrorProp);
 }
 
 void Zmq::addFloatProperty(CompositeProperty* newComp, CompositeProperty* newMirror) {

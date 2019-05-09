@@ -107,6 +107,7 @@ private:
     void updateUI();
 
     void parseMessage(std::string, json);
+    void parseBoolMessage(PropMapping*, json);
     void parseFloatMessage(PropMapping*, json);
     void parseIntMessage(PropMapping*, json);
     void parseIntVec2Message(PropMapping*, json);
@@ -114,6 +115,7 @@ private:
     void parseStereoCameraMessage(PropMapping*, json);
 
     void addSelectedProperty();
+    void addBoolProperty(CompositeProperty*, CompositeProperty*);
     void addFloatProperty(CompositeProperty*, CompositeProperty*);
     void addIntProperty(CompositeProperty*, CompositeProperty*);
     void addIntVec2Property(CompositeProperty*, CompositeProperty*);
