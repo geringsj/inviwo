@@ -99,6 +99,11 @@ Zmq::~Zmq() {
 
 void Zmq::process() {}
 
+/*
+	Starting to listen to and dispatch ZMQ messages. REceives messages and triggers UI updates when ready.
+	ZMQ thread, but also dispatching to UI thread.
+	Time critical (delay & jitter)!
+*/
 void Zmq::receiveZMQ() {
     zmq::context_t context(1);
     zmq::socket_t zmq_socket = zmq::socket_t(context, ZMQ_SUB);
@@ -139,6 +144,11 @@ void Zmq::receiveZMQ() {
     context.~context_t();
 }
 
+/*
+	Updating the UI. This copies values from all mirror Props to all displayed Props and happens every time a frame has been drawn.
+	UI thread.
+	Time critical (jitter)!	
+*/
 void Zmq::updateUI() {
     for (auto i = additionalProps.begin(); i != additionalProps.end(); ++i) {
         PropMapping* pm = *i;
@@ -165,6 +175,11 @@ void Zmq::updateUI() {
     }
 }
 
+/*
+	Parsing Messages from ZMQ. This might be a lot.
+	ZMQ thread.
+	Time critical (delay)!
+*/
 void Zmq::parseMessage(std::string address, json content) {
     for (auto i = additionalProps.begin(); i != additionalProps.end(); ++i) {
         PropMapping* pm = *i;
@@ -253,6 +268,11 @@ void Zmq::parseFloatVec3Message(PropMapping* prop, json content) {
     dynamic_cast<FloatVec3Property*>(prop->mirror->getPropertyByIdentifier("value"))->set(value);
 }
 
+/*
+	Add the selected Property type to the Processor.
+	UI thread.
+	This only happens on User Interaction and should thus not be time critical.
+*/
 void Zmq::addSelectedProperty() {
     if (name_.get() != "" && address_.get() != "") {
         // Create a new Composite Property with the matching address
@@ -388,6 +408,9 @@ void Zmq::addStereoCameraProperty(CompositeProperty* newComp, CompositeProperty*
     newMirror->addProperty(cameraRMirror);
 }
 
+/*
+	Serialization Methods for the Processor. Calling the serialization of all PropMappings.
+*/
 void Zmq::serialize(Serializer& s) const {
     s.serialize("propMapping", additionalProps, "propmapping");
     Processor::serialize(s);
