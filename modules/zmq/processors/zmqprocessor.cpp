@@ -33,9 +33,9 @@
 
 namespace inviwo {
 
-PropMapping::PropMapping(std::string address, std::string type, CompositeProperty* property,
+PropMapping::PropMapping(std::string address, CompositeProperty* property,
                          CompositeProperty* mirror)
-    : address(address), type(type), property(property), mirror(mirror) {}
+    : address(address), type(PropertyType::none), property(property), mirror(mirror) {}
 
 void PropMapping::serialize(Serializer& s) const {
 	s.serialize("address", address);
@@ -151,26 +151,26 @@ void Zmq::receiveZMQ() {
 void Zmq::updateUI() {
     for (auto i = additionalProps.begin(); i != additionalProps.end(); ++i) {
         PropMapping* pm = *i;
-        if (pm->type == "Stereo Camera") {
-            // Update Left Eye
-            dynamic_cast<FloatVec3Property*>(pm->property->getPropertyByIdentifier("lookFromL", true))->set(dynamic_cast<FloatVec3Property*>(pm->mirror->getPropertyByIdentifier("lookFromL", true))->get());
-            dynamic_cast<FloatVec3Property*>(pm->property->getPropertyByIdentifier("lookToL", true))->set(dynamic_cast<FloatVec3Property*>(pm->mirror->getPropertyByIdentifier("lookToL", true))->get());
-            dynamic_cast<FloatVec3Property*>(pm->property->getPropertyByIdentifier("lookUpL", true))->set(dynamic_cast<FloatVec3Property*>(pm->mirror->getPropertyByIdentifier("lookUpL", true))->get());
-            // Update Right Eye
-            dynamic_cast<FloatVec3Property*>(pm->property->getPropertyByIdentifier("lookFromR", true))->set(dynamic_cast<FloatVec3Property*>(pm->mirror->getPropertyByIdentifier("lookFromR", true))->get());
-            dynamic_cast<FloatVec3Property*>(pm->property->getPropertyByIdentifier("lookToR", true))->set(dynamic_cast<FloatVec3Property*>(pm->mirror->getPropertyByIdentifier("lookToR", true))->get());
-            dynamic_cast<FloatVec3Property*>(pm->property->getPropertyByIdentifier("lookUpR", true))->set(dynamic_cast<FloatVec3Property*>(pm->mirror->getPropertyByIdentifier("lookUpR", true))->get());
-        } else if (pm->type == "Bool") {
-            dynamic_cast<BoolProperty*>(pm->property->getPropertyByIdentifier("value"))->set(dynamic_cast<BoolProperty*>(pm->mirror->getPropertyByIdentifier("value"))->get());
-        } else if (pm->type == "Float") {
-            dynamic_cast<FloatProperty*>(pm->property->getPropertyByIdentifier("value"))->set(dynamic_cast<FloatProperty*>(pm->mirror->getPropertyByIdentifier("value"))->get());
-        } else if (pm->type == "Int") {
-            dynamic_cast<IntProperty*>(pm->property->getPropertyByIdentifier("value"))->set(dynamic_cast<IntProperty*>(pm->mirror->getPropertyByIdentifier("value"))->get());
-        } else if (pm->type == "IntVec2") {
-            dynamic_cast<IntVec2Property*>(pm->property->getPropertyByIdentifier("value"))->set(dynamic_cast<IntVec2Property*>(pm->mirror->getPropertyByIdentifier("value"))->get());
-        } else if (pm->type == "FloatVec3") {
-            dynamic_cast<FloatVec3Property*>(pm->property->getPropertyByIdentifier("value"))->set(dynamic_cast<FloatVec3Property*>(pm->mirror->getPropertyByIdentifier("value"))->get());
-        }
+        if (pm->type == PropertyType::boolVal) {
+			dynamic_cast<BoolProperty*>(pm->property->getPropertyByIdentifier("value"))->set(dynamic_cast<BoolProperty*>(pm->mirror->getPropertyByIdentifier("value"))->get());
+        } else if (pm->type == PropertyType::intVal) {
+			dynamic_cast<IntProperty*>(pm->property->getPropertyByIdentifier("value"))->set(dynamic_cast<IntProperty*>(pm->mirror->getPropertyByIdentifier("value"))->get());
+        } else if (pm->type == PropertyType::floatVal) {
+			dynamic_cast<FloatProperty*>(pm->property->getPropertyByIdentifier("value"))->set(dynamic_cast<FloatProperty*>(pm->mirror->getPropertyByIdentifier("value"))->get());
+        } else if (pm->type == PropertyType::intVec2Val) {
+			dynamic_cast<IntVec2Property*>(pm->property->getPropertyByIdentifier("value"))->set(dynamic_cast<IntVec2Property*>(pm->mirror->getPropertyByIdentifier("value"))->get());
+        } else if (pm->type == PropertyType::floatVec3Val) {
+			dynamic_cast<FloatVec3Property*>(pm->property->getPropertyByIdentifier("value"))->set(dynamic_cast<FloatVec3Property*>(pm->mirror->getPropertyByIdentifier("value"))->get());
+        } else if (pm->type == PropertyType::stereoCameraVal) {
+			// Update Left Eye
+			dynamic_cast<FloatVec3Property*>(pm->property->getPropertyByIdentifier("lookFromL", true))->set(dynamic_cast<FloatVec3Property*>(pm->mirror->getPropertyByIdentifier("lookFromL", true))->get());
+			dynamic_cast<FloatVec3Property*>(pm->property->getPropertyByIdentifier("lookToL", true))->set(dynamic_cast<FloatVec3Property*>(pm->mirror->getPropertyByIdentifier("lookToL", true))->get());
+			dynamic_cast<FloatVec3Property*>(pm->property->getPropertyByIdentifier("lookUpL", true))->set(dynamic_cast<FloatVec3Property*>(pm->mirror->getPropertyByIdentifier("lookUpL", true))->get());
+			// Update Right Eye
+			dynamic_cast<FloatVec3Property*>(pm->property->getPropertyByIdentifier("lookFromR", true))->set(dynamic_cast<FloatVec3Property*>(pm->mirror->getPropertyByIdentifier("lookFromR", true))->get());
+			dynamic_cast<FloatVec3Property*>(pm->property->getPropertyByIdentifier("lookToR", true))->set(dynamic_cast<FloatVec3Property*>(pm->mirror->getPropertyByIdentifier("lookToR", true))->get());
+			dynamic_cast<FloatVec3Property*>(pm->property->getPropertyByIdentifier("lookUpR", true))->set(dynamic_cast<FloatVec3Property*>(pm->mirror->getPropertyByIdentifier("lookUpR", true))->get());
+		}
     }
 }
 
@@ -183,19 +183,22 @@ void Zmq::parseMessage(std::string address, json content) {
     for (auto i = additionalProps.begin(); i != additionalProps.end(); ++i) {
         PropMapping* pm = *i;
         if (pm->address == address) {
-            if (pm->type == "Stereo Camera") {
-                parseStereoCameraMessage(pm, content);
-            } else if (pm->type == "Bool") {
-                parseBoolMessage(pm, content);
-            } else if (pm->type == "Float") {
-                parseFloatMessage(pm, content);
-            } else if (pm->type == "Int") {
-                parseIntMessage(pm, content);
-            } else if (pm->type == "IntVec2") {
-                parseIntVec2Message(pm, content);
-            } else if (pm->type == "FloatVec3") {
-                parseFloatVec3Message(pm, content);
-            }
+			switch (pm->type) {
+				case PropertyType::boolVal:
+					parseBoolMessage(pm, content);
+				case PropertyType::intVal:
+					parseIntMessage(pm, content);
+				case PropertyType::floatVal:
+					parseFloatMessage(pm, content);
+				case PropertyType::intVec2Val:
+					parseIntVec2Message(pm, content);
+				case PropertyType::floatVec3Val:
+					parseFloatVec3Message(pm, content);
+				case PropertyType::stereoCameraVal:
+					parseStereoCameraMessage(pm, content);
+				default:
+					break;
+			}
         }
     }
 }
@@ -278,21 +281,30 @@ void Zmq::addSelectedProperty() {
         CompositeProperty* newComp = new CompositeProperty(name_.get(), name_.get());
         CompositeProperty* newMirror = new CompositeProperty(name_.get(), name_.get());
         // Create the PropertyMapping for later modifications
-        PropMapping* pm = new PropMapping(address_.get(), type_.get(), newComp, newMirror);
+        PropMapping* pm = new PropMapping(address_.get(), newComp, newMirror);
+		// Set the name and address values back to none.
+        address_.set("");
+        name_.set("");
 
         // Add type-specific props
         std::string selectedType = type_.getSelectedDisplayName();
         if (selectedType == "Bool") {
+            pm->type = PropertyType::boolVal;
             addBoolProperty(newComp, newMirror);
 		} else if (selectedType == "Float") {
+            pm->type = PropertyType::floatVal;
             addFloatProperty(newComp, newMirror);
         } else if (selectedType == "Int") {
+            pm->type = PropertyType::intVal;
             addIntProperty(newComp, newMirror);
         } else if (selectedType == "IntVec2") {
+            pm->type = PropertyType::intVec2Val;
             addIntVec2Property(newComp, newMirror);
         } else if (selectedType == "FloatVec3") {
+            pm->type = PropertyType::floatVec3Val;
             addFloatVec3Property(newComp, newMirror);
         } else if (selectedType == "Stereo Camera") {
+            pm->type = PropertyType::stereoCameraVal;
             addStereoCameraProperty(newComp, newMirror);
 		}
 

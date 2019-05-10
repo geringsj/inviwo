@@ -46,18 +46,20 @@ using json = nlohmann::json;
 
 namespace inviwo {
 
+enum PropertyType {none, boolVal, intVal, floatVal, intVec2Val, floatVec3Val, stereoCameraVal};
+
 class PropMapping : public Serializable {
 public:
-    PropMapping(std::string address, std::string type, CompositeProperty* property,
+    PropMapping(std::string address, CompositeProperty* property,
                 CompositeProperty* mirror);
-    PropMapping() = default;
+    PropMapping() : type(PropertyType::none){};
     virtual ~PropMapping() = default;
 
     virtual void serialize(Serializer& s) const override;
     virtual void deserialize(Deserializer& d) override;
 
 	std::string address;
-    std::string type;
+    PropertyType type;
     std::unique_ptr<CompositeProperty> property;
     std::unique_ptr<CompositeProperty> mirror;
 };
