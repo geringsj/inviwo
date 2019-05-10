@@ -117,15 +117,14 @@ void Zmq::receiveZMQ() {
     while (should_run_ == true) {
         // Address Message:
         zmq::message_t address;
-        zmq_socket.recv(&address);
+        bool received = zmq_socket.recv(&address);
         std::string address_string = std::string(static_cast<char*>(address.data()), address.size());
-
-        // Content Message:
-        zmq::message_t message;
-        zmq_socket.recv(&message);
-        std::string message_string = std::string(static_cast<char*>(message.data()), message.size());
-
-		if (address_string != "") {
+        if (received) {
+			// Content Message:
+			zmq::message_t message;
+			zmq_socket.recv(&message);
+			std::string message_string = std::string(static_cast<char*>(message.data()), message.size());
+        
 			try {
 				parseMessage(address_string, json::parse(message_string));  // Parse all the messages and change the Mirrors accordingly
 				if (future_.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready) {  // If the UI is ready
@@ -137,7 +136,7 @@ void Zmq::receiveZMQ() {
                 // Sometimes, the address and message contain incorrect values. This is a
                 // HACK to catch them. It is not a clean solution and should be changed!
             }
-		}
+        }
     }
 
     zmq_socket.~socket_t();
