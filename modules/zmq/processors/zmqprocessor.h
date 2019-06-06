@@ -78,10 +78,10 @@ public:
  * \brief Shares the image with other Spout Applications.
  *
  */
-class IVW_MODULE_ZMQ_API Zmq : public Processor {
+class IVW_MODULE_ZMQ_API ZmqReceiver : public Processor {
 public:
-    Zmq();
-    virtual ~Zmq();
+    ZmqReceiver();
+    virtual ~ZmqReceiver();
 
     virtual void process() override;
 
