@@ -51,17 +51,17 @@ void PropMapping::deserialize(Deserializer& d) {
     d.deserializeAs<inviwo::Property>("mirror", mirror);
 }
 
-const ProcessorInfo Zmq::processorInfo_{
+const ProcessorInfo ZmqReceiver::processorInfo_{
     "org.inviwo.Zmq",         // Class identifier
-    "Zmq",                    // Display name
+    "ZmqReceiver",            // Display name
     "Image Operation",        // Category
     CodeState::Experimental,  // Code state
     Tags::GL,                 // Tags
 };
 
-const ProcessorInfo Zmq::getProcessorInfo() const { return processorInfo_; }
+const ProcessorInfo ZmqReceiver::getProcessorInfo() const { return processorInfo_; }
 
-Zmq::Zmq()
+ZmqReceiver::ZmqReceiver()
     : Processor()
     , addParam_("addParam", "Add Parameter")
     , type_("property", "Property")
@@ -88,23 +88,23 @@ Zmq::Zmq()
     addParam_.addProperty(addParamButton_);
 
     // Start the thread that listens to ZMQ messages
-    thread_ = std::thread(&Zmq::receiveZMQ, this);
+    thread_ = std::thread(&ZmqReceiver::receiveZMQ, this);
 }
 
-Zmq::~Zmq() {
+ZmqReceiver::~ZmqReceiver() {
     should_run_ = false;
     thread_.join();
     thread_.~thread();
 }
 
-void Zmq::process() {}
+void ZmqReceiver::process() {}
 
 /*
 	Starting to listen to and dispatch ZMQ messages. REceives messages and triggers UI updates when ready.
 	ZMQ thread, but also dispatching to UI thread.
 	Time critical (delay & jitter)!
 */
-void Zmq::receiveZMQ() {
+void ZmqReceiver::receiveZMQ() {
     zmq::context_t context(1);
     zmq::socket_t zmq_socket = zmq::socket_t(context, ZMQ_SUB);
     zmq_socket.setsockopt(ZMQ_IDENTITY, "Inviwo", 6);
@@ -148,7 +148,7 @@ void Zmq::receiveZMQ() {
 	UI thread.
 	Time critical (jitter)!	
 */
-void Zmq::updateUI() {
+void ZmqReceiver::updateUI() {
     for (auto i = additionalProps.begin(); i != additionalProps.end(); ++i) {
         PropMapping* pm = *i;
         if (pm->type == PropertyType::boolVal) {
@@ -179,7 +179,7 @@ void Zmq::updateUI() {
 	ZMQ thread.
 	Time critical (delay)!
 */
-void Zmq::parseMessage(std::string address, json content) {
+void ZmqReceiver::parseMessage(std::string address, json content) {
     for (auto i = additionalProps.begin(); i != additionalProps.end(); ++i) {
         PropMapping* pm = *i;
         if (pm->address == address) {
@@ -203,7 +203,7 @@ void Zmq::parseMessage(std::string address, json content) {
     }
 }
 
-void Zmq::parseStereoCameraMessage(PropMapping* prop, json content) {
+void ZmqReceiver::parseStereoCameraMessage(PropMapping* prop, json content) {
     // Left Eye
     // Get camera props from unity
     vec3 fromL =
@@ -245,27 +245,27 @@ void Zmq::parseStereoCameraMessage(PropMapping* prop, json content) {
         ->set(upR);
 }
 
-void Zmq::parseBoolMessage(PropMapping* prop, json content) {
+void ZmqReceiver::parseBoolMessage(PropMapping* prop, json content) {
     bool value = content["value"];
     dynamic_cast<BoolProperty*>(prop->mirror->getPropertyByIdentifier("value"))->set(value);
 }
 
-void Zmq::parseFloatMessage(PropMapping* prop, json content) {
+void ZmqReceiver::parseFloatMessage(PropMapping* prop, json content) {
     float value = content["value"];
     dynamic_cast<FloatProperty*>(prop->mirror->getPropertyByIdentifier("value"))->set(value);
 }
 
-void Zmq::parseIntMessage(PropMapping* prop, json content) {
+void ZmqReceiver::parseIntMessage(PropMapping* prop, json content) {
     int value = content["value"];
     dynamic_cast<IntProperty*>(prop->mirror->getPropertyByIdentifier("value"))->set(value);
 }
 
-void Zmq::parseIntVec2Message(PropMapping* prop, json content) {
+void ZmqReceiver::parseIntVec2Message(PropMapping* prop, json content) {
     ivec2 value = ivec2(content["value"]["x"], content["value"]["y"]);
     dynamic_cast<IntVec2Property*>(prop->mirror->getPropertyByIdentifier("value"))->set(value);
 }
 
-void Zmq::parseFloatVec3Message(PropMapping* prop, json content) {
+void ZmqReceiver::parseFloatVec3Message(PropMapping* prop, json content) {
     vec3 value = vec3(content["value"]["x"], content["value"]["y"], content["value"]["z"]);
     dynamic_cast<FloatVec3Property*>(prop->mirror->getPropertyByIdentifier("value"))->set(value);
 }
@@ -275,7 +275,7 @@ void Zmq::parseFloatVec3Message(PropMapping* prop, json content) {
 	UI thread.
 	This only happens on User Interaction and should thus not be time critical.
 */
-void Zmq::addSelectedProperty() {
+void ZmqReceiver::addSelectedProperty() {
     if (name_.get() != "" && address_.get() != "") {
         // Create a new Composite Property with the matching address
         CompositeProperty* newComp = new CompositeProperty(name_.get(), name_.get());
@@ -318,7 +318,7 @@ void Zmq::addSelectedProperty() {
     }
 }
 
-void Zmq::addBoolProperty(CompositeProperty* newComp, CompositeProperty* newMirror) {
+void ZmqReceiver::addBoolProperty(CompositeProperty* newComp, CompositeProperty* newMirror) {
     BoolProperty* newProp = new BoolProperty("value", "Value", false);
     newProp->setSerializationMode(PropertySerializationMode::All);
     BoolProperty* newMirrorProp = new BoolProperty("value", "Value", false);
@@ -327,7 +327,7 @@ void Zmq::addBoolProperty(CompositeProperty* newComp, CompositeProperty* newMirr
     newMirror->addProperty(newMirrorProp);
 }
 
-void Zmq::addFloatProperty(CompositeProperty* newComp, CompositeProperty* newMirror) {
+void ZmqReceiver::addFloatProperty(CompositeProperty* newComp, CompositeProperty* newMirror) {
     FloatProperty* newProp = new FloatProperty("value", "Value", 0.0, -10000.0, 10000.0);
     newProp->setSerializationMode(PropertySerializationMode::All);
     FloatProperty* newMirrorProp = new FloatProperty("value", "Value", 0.0, -10000.0, 10000.0);
@@ -336,7 +336,7 @@ void Zmq::addFloatProperty(CompositeProperty* newComp, CompositeProperty* newMir
     newMirror->addProperty(newMirrorProp);
 }
 
-void Zmq::addIntProperty(CompositeProperty* newComp, CompositeProperty* newMirror) {
+void ZmqReceiver::addIntProperty(CompositeProperty* newComp, CompositeProperty* newMirror) {
     IntProperty* newProp = new IntProperty("value", "Value", 0, -10000, 10000); 
     newProp->setSerializationMode(PropertySerializationMode::All);
 	IntProperty* newMirrorProp = new IntProperty("value", "Value", 0, -10000, 10000);
@@ -345,7 +345,7 @@ void Zmq::addIntProperty(CompositeProperty* newComp, CompositeProperty* newMirro
     newMirror->addProperty(newMirrorProp);
 }
 
-void Zmq::addIntVec2Property(CompositeProperty* newComp, CompositeProperty* newMirror) {
+void ZmqReceiver::addIntVec2Property(CompositeProperty* newComp, CompositeProperty* newMirror) {
     IntVec2Property* newProp = new IntVec2Property("value", "Value", ivec2(0), -ivec2(10000), ivec2(10000));
     newProp->setSerializationMode(PropertySerializationMode::All);
     IntVec2Property* newMirrorProp = new IntVec2Property("value", "Value", ivec2(0), -ivec2(10000), ivec2(10000));
@@ -354,7 +354,7 @@ void Zmq::addIntVec2Property(CompositeProperty* newComp, CompositeProperty* newM
     newMirror->addProperty(newMirrorProp);
 }
 
-void Zmq::addFloatVec3Property(CompositeProperty* newComp, CompositeProperty* newMirror) {
+void ZmqReceiver::addFloatVec3Property(CompositeProperty* newComp, CompositeProperty* newMirror) {
     FloatVec3Property* newProp = new FloatVec3Property("value", "Value", vec3(0.0f), -vec3(10000.0f), vec3(10000.0f), vec3(0.01f));
     newProp->setSerializationMode(PropertySerializationMode::All);
     FloatVec3Property* newMirrorProp = new FloatVec3Property("value", "Value", vec3(0.0f), -vec3(10000.0f), vec3(10000.0f), vec3(0.01f));
@@ -363,7 +363,7 @@ void Zmq::addFloatVec3Property(CompositeProperty* newComp, CompositeProperty* ne
     newMirror->addProperty(newMirrorProp);
 }
 
-void Zmq::addStereoCameraProperty(CompositeProperty* newComp, CompositeProperty* newMirror) {
+void ZmqReceiver::addStereoCameraProperty(CompositeProperty* newComp, CompositeProperty* newMirror) {
     // Left Camera
     CompositeProperty* cameraL = new CompositeProperty("camparamsL", "Camera Parameters L");
     cameraL->setSerializationMode(PropertySerializationMode::All);
@@ -422,12 +422,12 @@ void Zmq::addStereoCameraProperty(CompositeProperty* newComp, CompositeProperty*
 /*
 	Serialization Methods for the Processor. Calling the serialization of all PropMappings.
 */
-void Zmq::serialize(Serializer& s) const {
+void ZmqReceiver::serialize(Serializer& s) const {
     s.serialize("propMapping", additionalProps, "propmapping");
     Processor::serialize(s);
 }
 
-void Zmq::deserialize(Deserializer& d) {
+void ZmqReceiver::deserialize(Deserializer& d) {
     d.deserialize("propMapping", additionalProps, "propmapping");
     Processor::deserialize(d);
 }
