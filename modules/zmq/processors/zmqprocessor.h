@@ -46,7 +46,7 @@ using json = nlohmann::json;
 
 namespace inviwo {
 
-enum PropertyType {none, boolVal, intVal, floatVal, intVec2Val, floatVec3Val, stereoCameraVal};
+enum PropertyType {none, boolVal, intVal, floatVal, intVec2Val, floatVec3Val, stereoCameraVal, cameraProjectionVal, stereoCameraViewVal};
 
 class PropMapping : public Serializable {
 public:
@@ -115,6 +115,8 @@ private:
     void parseIntVec2Message(PropMapping*, json);
     void parseFloatVec3Message(PropMapping*, json);
     void parseStereoCameraMessage(PropMapping*, json);
+    void parseCameraProjectionMessage(PropMapping*, json);
+    void parseStereoCameraViewMessage(PropMapping*, json);
 
     void addSelectedProperty();
     void addBoolProperty(CompositeProperty*, CompositeProperty*);
@@ -123,6 +125,8 @@ private:
     void addIntVec2Property(CompositeProperty*, CompositeProperty*);
     void addFloatVec3Property(CompositeProperty*, CompositeProperty*);
     void addStereoCameraProperty(CompositeProperty*, CompositeProperty*);
+    void addCameraProjectionProperty(CompositeProperty*, CompositeProperty*);
+    void addStereoCameraViewProperty(CompositeProperty*, CompositeProperty*);
 
     std::thread thread_;
     zmq::context_t ctx_;
