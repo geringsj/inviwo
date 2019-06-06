@@ -36,7 +36,7 @@ namespace inviwo {
 ZmqModule::ZmqModule(InviwoApplication* app) : InviwoModule(app, "zmq") {
     // Register objects that can be shared with the rest of inviwo here:
     // Processors
-    registerProcessor<Zmq>();
+    registerProcessor<ZmqReceiver>();
     registerProcessor<ZmqVolumeBoxProcessor>();
 }
 }  // namespace inviwo
