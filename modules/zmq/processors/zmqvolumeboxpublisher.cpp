@@ -52,7 +52,7 @@ ZmqVolumeBoxProcessor::ZmqVolumeBoxProcessor()
 
     addPort(volume_);
 
-	box_socket.bind("tcp://*:12346");
+	box_socket.bind("tcp://127.0.0.1:12346");
 }
 
 ZmqVolumeBoxProcessor::~ZmqVolumeBoxProcessor() {}
