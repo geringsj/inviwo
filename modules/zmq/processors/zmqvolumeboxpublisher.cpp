@@ -55,7 +55,10 @@ ZmqVolumeBoxProcessor::ZmqVolumeBoxProcessor()
 	box_socket.bind("tcp://127.0.0.1:12346");
 }
 
-ZmqVolumeBoxProcessor::~ZmqVolumeBoxProcessor() {}
+ZmqVolumeBoxProcessor::~ZmqVolumeBoxProcessor() {
+    box_socket.close();
+    context.close();
+}
 
 void ZmqVolumeBoxProcessor::process() { 
 	sendZMQ();
