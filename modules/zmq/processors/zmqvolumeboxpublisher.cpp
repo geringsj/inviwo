@@ -89,6 +89,22 @@ void ZmqVolumeBoxProcessor::sendZMQ() {
 
 	// Sending the Messages
     box_socket.send(namespace_identifier_, ZMQ_SNDMORE);
-	box_socket.send(message); 
+    box_socket.send(message); 
+
+    // send in mint format
+    namespace_identifier_string = "BoundingBoxCorners";
+    namespace_identifier_ = zmq::message_t(namespace_identifier_string.size());
+    memcpy(namespace_identifier_.data(), namespace_identifier_string.data(), namespace_identifier_string.size());
+
+    json_message = {
+		{"min", {{"x", left_lower.x}, {"y", left_lower.y}, {"z", left_lower.z}, {"w", 0.0f}}},
+		{"max", {{"x", right_upper.x}, {"y", right_upper.y}, {"z", right_upper.z}, {"w", 0.0f}}}
+    };
+    string_message = json_message.dump();
+    message = zmq::message_t(string_message.size());
+    memcpy(message.data(), string_message.data(), string_message.size());
+
+    box_socket.send(namespace_identifier_, ZMQ_SNDMORE);
+    box_socket.send(message); 
 }
 }  // namespace inviwo 
