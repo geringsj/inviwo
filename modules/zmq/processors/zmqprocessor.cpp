@@ -186,16 +186,22 @@ void ZmqReceiver::parseMessage(std::string address, json content) {
 			switch (pm->type) {
 				case PropertyType::boolVal:
 					parseBoolMessage(pm, content);
+					break;
 				case PropertyType::intVal:
 					parseIntMessage(pm, content);
+					break;
 				case PropertyType::floatVal:
 					parseFloatMessage(pm, content);
+					break;
 				case PropertyType::intVec2Val:
 					parseIntVec2Message(pm, content);
+					break;
 				case PropertyType::floatVec3Val:
 					parseFloatVec3Message(pm, content);
+					break;
 				case PropertyType::stereoCameraVal:
 					parseStereoCameraMessage(pm, content);
+					break;
 				default:
 					break;
 			}
