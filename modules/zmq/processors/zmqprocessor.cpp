@@ -38,14 +38,14 @@ PropMapping::PropMapping(std::string address, CompositeProperty* property,
     : address(address), type(PropertyType::none), property(property), mirror(mirror) {}
 
 void PropMapping::serialize(Serializer& s) const {
-	s.serialize("address", address);
+    s.serialize("address", address);
     s.serialize("type", type);
     s.serialize("property", property);
     s.serialize("mirror", mirror);
 }
 
 void PropMapping::deserialize(Deserializer& d) {
-	d.deserialize("address", address);
+    d.deserialize("address", address);
     d.deserialize("type", type);
     d.deserializeAs<inviwo::Property>("property", property);
     d.deserializeAs<inviwo::Property>("mirror", mirror);
@@ -81,6 +81,7 @@ ZmqReceiver::ZmqReceiver()
     type_.addOption("Stereo Camera", "Stereo Camera");
     type_.addOption("CameraProjection", "CameraProjection");
     type_.addOption("StereoCameraView", "StereoCameraView");
+    type_.addOption("Transfer Function", "TransferFunction");
     type_.setSelectedIndex(0);
     type_.setCurrentStateAsDefault();
     addParam_.addProperty(type_);
@@ -102,9 +103,8 @@ ZmqReceiver::~ZmqReceiver() {
 void ZmqReceiver::process() {}
 
 /*
-	Starting to listen to and dispatch ZMQ messages. REceives messages and triggers UI updates when ready.
-	ZMQ thread, but also dispatching to UI thread.
-	Time critical (delay & jitter)!
+        Starting to listen to and dispatch ZMQ messages. REceives messages and triggers UI updates
+   when ready. ZMQ thread, but also dispatching to UI thread. Time critical (delay & jitter)!
 */
 void ZmqReceiver::receiveZMQ() {
     zmq::context_t context(1);
@@ -120,20 +120,26 @@ void ZmqReceiver::receiveZMQ() {
         // Address Message:
         zmq::message_t address;
         bool received = zmq_socket.recv(&address);
-        std::string address_string = std::string(static_cast<char*>(address.data()), address.size());
+        std::string address_string =
+            std::string(static_cast<char*>(address.data()), address.size());
         if (received) {
-			// Content Message:
-			zmq::message_t message;
-			zmq_socket.recv(&message);
-			std::string message_string = std::string(static_cast<char*>(message.data()), message.size());
-        
-			try {
-				parseMessage(address_string, json::parse(message_string));  // Parse all the messages and change the Mirrors accordingly
-				if (future_.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready) {  // If the UI is ready
-					future_ = dispatchFront([this, address_string, message_string]() {  // Go to the UI Thread
-						updateUI();  // Update the UI
-					});
-				}
+            // Content Message:
+            zmq::message_t message;
+            zmq_socket.recv(&message);
+            std::string message_string =
+                std::string(static_cast<char*>(message.data()), message.size());
+
+            try {
+                parseMessage(address_string,
+                             json::parse(message_string));  // Parse all the messages and change the
+                                                            // Mirrors accordingly
+                if (future_.wait_for(std::chrono::milliseconds(0)) ==
+                    std::future_status::ready) {  // If the UI is ready
+                    future_ = dispatchFront(
+                        [this, address_string, message_string]() {  // Go to the UI Thread
+                            updateUI();                             // Update the UI
+                        });
+                }
             } catch (...) {
                 // Sometimes, the address and message contain incorrect values. This is a
                 // HACK to catch them. It is not a clean solution and should be changed!
@@ -146,96 +152,150 @@ void ZmqReceiver::receiveZMQ() {
 }
 
 /*
-	Updating the UI. This copies values from all mirror Props to all displayed Props and happens every time a frame has been drawn.
-	UI thread.
-	Time critical (jitter)!	
+        Updating the UI. This copies values from all mirror Props to all displayed Props and happens
+   every time a frame has been drawn. UI thread. Time critical (jitter)!
 */
 void ZmqReceiver::updateUI() {
     for (auto i = additionalProps.begin(); i != additionalProps.end(); ++i) {
         PropMapping* pm = *i;
         if (pm->type == PropertyType::boolVal) {
-			dynamic_cast<BoolProperty*>(pm->property->getPropertyByIdentifier("value"))->set(dynamic_cast<BoolProperty*>(pm->mirror->getPropertyByIdentifier("value"))->get());
+            dynamic_cast<BoolProperty*>(pm->property->getPropertyByIdentifier("value"))
+                ->set(dynamic_cast<BoolProperty*>(pm->mirror->getPropertyByIdentifier("value"))
+                          ->get());
         } else if (pm->type == PropertyType::intVal) {
-			dynamic_cast<IntProperty*>(pm->property->getPropertyByIdentifier("value"))->set(dynamic_cast<IntProperty*>(pm->mirror->getPropertyByIdentifier("value"))->get());
+            dynamic_cast<IntProperty*>(pm->property->getPropertyByIdentifier("value"))
+                ->set(dynamic_cast<IntProperty*>(pm->mirror->getPropertyByIdentifier("value"))
+                          ->get());
         } else if (pm->type == PropertyType::floatVal) {
-			dynamic_cast<FloatProperty*>(pm->property->getPropertyByIdentifier("value"))->set(dynamic_cast<FloatProperty*>(pm->mirror->getPropertyByIdentifier("value"))->get());
+            dynamic_cast<FloatProperty*>(pm->property->getPropertyByIdentifier("value"))
+                ->set(dynamic_cast<FloatProperty*>(pm->mirror->getPropertyByIdentifier("value"))
+                          ->get());
         } else if (pm->type == PropertyType::intVec2Val) {
-			dynamic_cast<IntVec2Property*>(pm->property->getPropertyByIdentifier("value"))->set(dynamic_cast<IntVec2Property*>(pm->mirror->getPropertyByIdentifier("value"))->get());
+            dynamic_cast<IntVec2Property*>(pm->property->getPropertyByIdentifier("value"))
+                ->set(dynamic_cast<IntVec2Property*>(pm->mirror->getPropertyByIdentifier("value"))
+                          ->get());
         } else if (pm->type == PropertyType::floatVec3Val) {
-			dynamic_cast<FloatVec3Property*>(pm->property->getPropertyByIdentifier("value"))->set(dynamic_cast<FloatVec3Property*>(pm->mirror->getPropertyByIdentifier("value"))->get());
+            dynamic_cast<FloatVec3Property*>(pm->property->getPropertyByIdentifier("value"))
+                ->set(dynamic_cast<FloatVec3Property*>(pm->mirror->getPropertyByIdentifier("value"))
+                          ->get());
         } else if (pm->type == PropertyType::stereoCameraVal) {
-			// Update Left Eye
-			dynamic_cast<FloatVec3Property*>(pm->property->getPropertyByIdentifier("lookFromL", true))->set(dynamic_cast<FloatVec3Property*>(pm->mirror->getPropertyByIdentifier("lookFromL", true))->get());
-			dynamic_cast<FloatVec3Property*>(pm->property->getPropertyByIdentifier("lookToL", true))->set(dynamic_cast<FloatVec3Property*>(pm->mirror->getPropertyByIdentifier("lookToL", true))->get());
-			dynamic_cast<FloatVec3Property*>(pm->property->getPropertyByIdentifier("lookUpL", true))->set(dynamic_cast<FloatVec3Property*>(pm->mirror->getPropertyByIdentifier("lookUpL", true))->get());
-			// Update Right Eye
-			dynamic_cast<FloatVec3Property*>(pm->property->getPropertyByIdentifier("lookFromR", true))->set(dynamic_cast<FloatVec3Property*>(pm->mirror->getPropertyByIdentifier("lookFromR", true))->get());
-			dynamic_cast<FloatVec3Property*>(pm->property->getPropertyByIdentifier("lookToR", true))->set(dynamic_cast<FloatVec3Property*>(pm->mirror->getPropertyByIdentifier("lookToR", true))->get());
-			dynamic_cast<FloatVec3Property*>(pm->property->getPropertyByIdentifier("lookUpR", true))->set(dynamic_cast<FloatVec3Property*>(pm->mirror->getPropertyByIdentifier("lookUpR", true))->get());
+            // Update Left Eye
+            dynamic_cast<FloatVec3Property*>(
+                pm->property->getPropertyByIdentifier("lookFromL", true))
+                ->set(dynamic_cast<FloatVec3Property*>(
+                          pm->mirror->getPropertyByIdentifier("lookFromL", true))
+                          ->get());
+            dynamic_cast<FloatVec3Property*>(pm->property->getPropertyByIdentifier("lookToL", true))
+                ->set(dynamic_cast<FloatVec3Property*>(
+                          pm->mirror->getPropertyByIdentifier("lookToL", true))
+                          ->get());
+            dynamic_cast<FloatVec3Property*>(pm->property->getPropertyByIdentifier("lookUpL", true))
+                ->set(dynamic_cast<FloatVec3Property*>(
+                          pm->mirror->getPropertyByIdentifier("lookUpL", true))
+                          ->get());
+            // Update Right Eye
+            dynamic_cast<FloatVec3Property*>(
+                pm->property->getPropertyByIdentifier("lookFromR", true))
+                ->set(dynamic_cast<FloatVec3Property*>(
+                          pm->mirror->getPropertyByIdentifier("lookFromR", true))
+                          ->get());
+            dynamic_cast<FloatVec3Property*>(pm->property->getPropertyByIdentifier("lookToR", true))
+                ->set(dynamic_cast<FloatVec3Property*>(
+                          pm->mirror->getPropertyByIdentifier("lookToR", true))
+                          ->get());
+            dynamic_cast<FloatVec3Property*>(pm->property->getPropertyByIdentifier("lookUpR", true))
+                ->set(dynamic_cast<FloatVec3Property*>(
+                          pm->mirror->getPropertyByIdentifier("lookUpR", true))
+                          ->get());
         } else if (pm->type == PropertyType::cameraProjectionVal) {
 
-#define setProperty(PropertyType, SourceName, TargetName) \
-	dynamic_cast<##PropertyType*>(pm->property->getPropertyByIdentifier(#SourceName, true)) \
-        ->set(dynamic_cast<##PropertyType*>(                                \
-                  pm->mirror->getPropertyByIdentifier(#TargetName, true))->get())
+#define setProperty(PropertyType, SourceName, TargetName)                                         \
+    dynamic_cast<##PropertyType*>(pm->property->getPropertyByIdentifier(#SourceName, true))       \
+        ->set(                                                                                    \
+            dynamic_cast<##PropertyType*>(pm->mirror->getPropertyByIdentifier(#TargetName, true)) \
+                ->get())
 
-			setProperty(FloatProperty, FOV, FOV);
-			setProperty(FloatProperty, NearPlane, NearPlane);
-			setProperty(FloatProperty, FarPlane, FarPlane);
-			setProperty(FloatProperty, AspectRatio, AspectRatio);
-			setProperty(IntVec2Property, CanvasSize, CanvasSize);
+            setProperty(FloatProperty, FOV, FOV);
+            setProperty(FloatProperty, NearPlane, NearPlane);
+            setProperty(FloatProperty, FarPlane, FarPlane);
+            setProperty(FloatProperty, AspectRatio, AspectRatio);
+            setProperty(IntVec2Property, CanvasSize, CanvasSize);
         } else if (pm->type == PropertyType::stereoCameraViewVal) {
 
-			setProperty(FloatVec3Property, lookFromL, lookFromL);
-			setProperty(FloatVec3Property, lookToL, lookToL);
-			setProperty(FloatVec3Property, lookUpL, lookUpL);
+            setProperty(FloatVec3Property, lookFromL, lookFromL);
+            setProperty(FloatVec3Property, lookToL, lookToL);
+            setProperty(FloatVec3Property, lookUpL, lookUpL);
 
-			setProperty(FloatVec3Property, lookFromR, lookFromR);
-			setProperty(FloatVec3Property, lookToR, lookToR);
-			setProperty(FloatVec3Property, lookUpR, lookUpR);
-		}
+            setProperty(FloatVec3Property, lookFromR, lookFromR);
+            setProperty(FloatVec3Property, lookToR, lookToR);
+            setProperty(FloatVec3Property, lookUpR, lookUpR);
+        } else if (pm->type == PropertyType::transferFunctionVal) {
+            setProperty(TransferFunctionProperty, transferFunction, transferFunction);
+        }
     }
 }
 
 /*
-	Parsing Messages from ZMQ. This might be a lot.
-	ZMQ thread.
-	Time critical (delay)!
+        Parsing Messages from ZMQ. This might be a lot.
+        ZMQ thread.
+        Time critical (delay)!
 */
 void ZmqReceiver::parseMessage(std::string address, json content) {
     for (auto i = additionalProps.begin(); i != additionalProps.end(); ++i) {
         PropMapping* pm = *i;
         if (pm->address == address) {
-			switch (pm->type) {
-				case PropertyType::boolVal:
-					parseBoolMessage(pm, content);
-					break;
-				case PropertyType::intVal:
-					parseIntMessage(pm, content);
-					break;
-				case PropertyType::floatVal:
-					parseFloatMessage(pm, content);
-					break;
-				case PropertyType::intVec2Val:
-					parseIntVec2Message(pm, content);
-					break;
-				case PropertyType::floatVec3Val:
-					parseFloatVec3Message(pm, content);
-					break;
-				case PropertyType::stereoCameraVal:
-					parseStereoCameraMessage(pm, content);
-					break;
-				case PropertyType::cameraProjectionVal:
-					parseCameraProjectionMessage(pm, content);
-					break;
-				case PropertyType::stereoCameraViewVal:
-					parseStereoCameraViewMessage(pm, content);
-					break;
-				default:
-					break;
-			}
+            switch (pm->type) {
+                case PropertyType::boolVal:
+                    parseBoolMessage(pm, content);
+                    break;
+                case PropertyType::intVal:
+                    parseIntMessage(pm, content);
+                    break;
+                case PropertyType::floatVal:
+                    parseFloatMessage(pm, content);
+                    break;
+                case PropertyType::intVec2Val:
+                    parseIntVec2Message(pm, content);
+                    break;
+                case PropertyType::floatVec3Val:
+                    parseFloatVec3Message(pm, content);
+                    break;
+                case PropertyType::stereoCameraVal:
+                    parseStereoCameraMessage(pm, content);
+                    break;
+                case PropertyType::cameraProjectionVal:
+                    parseCameraProjectionMessage(pm, content);
+                    break;
+                case PropertyType::stereoCameraViewVal:
+                    parseStereoCameraViewMessage(pm, content);
+                    break;
+                case PropertyType::transferFunctionVal:
+                    parseTransferFunctionMessage(pm, content);
+                    break;
+                default:
+                    break;
+            }
         }
     }
+}
+
+void ZmqReceiver::parseTransferFunctionMessage(PropMapping* prop, json content) {
+    float maskMin = content["maskMin"];
+    float maskMax = content["maskMax"];
+    int type = content["type"];
+    auto points = content["points"];
+
+    TransferFunction tf = TransferFunction();
+
+    for (auto it = points.begin(); it != points.end(); ++it) {
+        json point = it.value();
+        tf.addPoint(point["pos"], vec4(point["rgba"]["x"], point["rgba"]["y"], point["rgba"]["z"],
+                                       point["rgba"]["w"]));
+    }
+
+	//Update mirror
+    dynamic_cast<TransferFunctionProperty*>(prop->mirror->getPropertyByIdentifier("transferFunction", true))
+        ->set(tf);
 }
 
 void ZmqReceiver::parseStereoCameraMessage(PropMapping* prop, json content) {
@@ -284,25 +344,42 @@ void ZmqReceiver::parseStereoCameraViewMessage(PropMapping* prop, json content) 
     // Left Eye
     // Get camera props from unity
 
-    vec3 fromL = vec3(content["leftEyeView"]["eyePos"]["x"], content["leftEyeView"]["eyePos"]["y"], content["leftEyeView"]["eyePos"]["z"]);
-    vec3 toL = vec3(content["leftEyeView"]["lookAtPos"]["x"], content["leftEyeView"]["lookAtPos"]["y"], content["leftEyeView"]["lookAtPos"]["z"]);
-    vec3 upL = vec3(content["leftEyeView"]["camUpDir"]["x"], content["leftEyeView"]["camUpDir"]["y"], content["leftEyeView"]["camUpDir"]["z"]);
+    vec3 fromL = vec3(content["leftEyeView"]["eyePos"]["x"], content["leftEyeView"]["eyePos"]["y"],
+                      content["leftEyeView"]["eyePos"]["z"]);
+    vec3 toL =
+        vec3(content["leftEyeView"]["lookAtPos"]["x"], content["leftEyeView"]["lookAtPos"]["y"],
+             content["leftEyeView"]["lookAtPos"]["z"]);
+    vec3 upL =
+        vec3(content["leftEyeView"]["camUpDir"]["x"], content["leftEyeView"]["camUpDir"]["y"],
+             content["leftEyeView"]["camUpDir"]["z"]);
 
     // Update Mirror
-    dynamic_cast<FloatVec3Property*>(prop->mirror->getPropertyByIdentifier("lookFromL", true))->set(fromL);
-    dynamic_cast<FloatVec3Property*>(prop->mirror->getPropertyByIdentifier("lookToL", true))->set(toL);
-    dynamic_cast<FloatVec3Property*>(prop->mirror->getPropertyByIdentifier("lookUpL", true))->set(upL);
+    dynamic_cast<FloatVec3Property*>(prop->mirror->getPropertyByIdentifier("lookFromL", true))
+        ->set(fromL);
+    dynamic_cast<FloatVec3Property*>(prop->mirror->getPropertyByIdentifier("lookToL", true))
+        ->set(toL);
+    dynamic_cast<FloatVec3Property*>(prop->mirror->getPropertyByIdentifier("lookUpL", true))
+        ->set(upL);
 
     // Right Eye
     // Get camera props from unity
-    vec3 fromR = vec3(content["rightEyeView"]["eyePos"]["x"], content["rightEyeView"]["eyePos"]["y"], content["rightEyeView"]["eyePos"]["z"]);
-    vec3 toR = vec3(content["rightEyeView"]["lookAtPos"]["x"], content["rightEyeView"]["lookAtPos"]["y"], content["rightEyeView"]["lookAtPos"]["z"]);
-    vec3 upR = vec3(content["rightEyeView"]["camUpDir"]["x"], content["rightEyeView"]["camUpDir"]["y"], content["rightEyeView"]["camUpDir"]["z"]);
+    vec3 fromR =
+        vec3(content["rightEyeView"]["eyePos"]["x"], content["rightEyeView"]["eyePos"]["y"],
+             content["rightEyeView"]["eyePos"]["z"]);
+    vec3 toR =
+        vec3(content["rightEyeView"]["lookAtPos"]["x"], content["rightEyeView"]["lookAtPos"]["y"],
+             content["rightEyeView"]["lookAtPos"]["z"]);
+    vec3 upR =
+        vec3(content["rightEyeView"]["camUpDir"]["x"], content["rightEyeView"]["camUpDir"]["y"],
+             content["rightEyeView"]["camUpDir"]["z"]);
 
     // Update Mirror
-    dynamic_cast<FloatVec3Property*>(prop->mirror->getPropertyByIdentifier("lookFromR", true))->set(fromR);
-    dynamic_cast<FloatVec3Property*>(prop->mirror->getPropertyByIdentifier("lookToR", true))->set(toR);
-    dynamic_cast<FloatVec3Property*>(prop->mirror->getPropertyByIdentifier("lookUpR", true))->set(upR);
+    dynamic_cast<FloatVec3Property*>(prop->mirror->getPropertyByIdentifier("lookFromR", true))
+        ->set(fromR);
+    dynamic_cast<FloatVec3Property*>(prop->mirror->getPropertyByIdentifier("lookToR", true))
+        ->set(toR);
+    dynamic_cast<FloatVec3Property*>(prop->mirror->getPropertyByIdentifier("lookUpR", true))
+        ->set(upR);
 }
 
 void ZmqReceiver::parseCameraProjectionMessage(PropMapping* prop, json content) {
@@ -314,11 +391,16 @@ void ZmqReceiver::parseCameraProjectionMessage(PropMapping* prop, json content) 
     int pixelHeight = content["pixelHeight"];
     ivec2 imageDimensions = ivec2(pixelWidth, pixelHeight);
 
-    dynamic_cast<FloatProperty*>(prop->mirror->getPropertyByIdentifier("FOV", true))->set(glm::degrees(fieldOfViewY_rad));
-    dynamic_cast<FloatProperty*>(prop->mirror->getPropertyByIdentifier("NearPlane", true))->set(nearClipPlane);
-    dynamic_cast<FloatProperty*>(prop->mirror->getPropertyByIdentifier("FarPlane", true))->set(farClipPlane);
-    dynamic_cast<FloatProperty*>(prop->mirror->getPropertyByIdentifier("AspectRatio", true))->set(aspect);
-    dynamic_cast<IntVec2Property*>(prop->mirror->getPropertyByIdentifier("CanvasSize", true))->set(imageDimensions);
+    dynamic_cast<FloatProperty*>(prop->mirror->getPropertyByIdentifier("FOV", true))
+        ->set(glm::degrees(fieldOfViewY_rad));
+    dynamic_cast<FloatProperty*>(prop->mirror->getPropertyByIdentifier("NearPlane", true))
+        ->set(nearClipPlane);
+    dynamic_cast<FloatProperty*>(prop->mirror->getPropertyByIdentifier("FarPlane", true))
+        ->set(farClipPlane);
+    dynamic_cast<FloatProperty*>(prop->mirror->getPropertyByIdentifier("AspectRatio", true))
+        ->set(aspect);
+    dynamic_cast<IntVec2Property*>(prop->mirror->getPropertyByIdentifier("CanvasSize", true))
+        ->set(imageDimensions);
 }
 
 void ZmqReceiver::parseBoolMessage(PropMapping* prop, json content) {
@@ -347,9 +429,9 @@ void ZmqReceiver::parseFloatVec3Message(PropMapping* prop, json content) {
 }
 
 /*
-	Add the selected Property type to the Processor.
-	UI thread.
-	This only happens on User Interaction and should thus not be time critical.
+        Add the selected Property type to the Processor.
+        UI thread.
+        This only happens on User Interaction and should thus not be time critical.
 */
 void ZmqReceiver::addSelectedProperty() {
     if (name_.get() != "" && address_.get() != "") {
@@ -358,7 +440,7 @@ void ZmqReceiver::addSelectedProperty() {
         CompositeProperty* newMirror = new CompositeProperty(name_.get(), name_.get());
         // Create the PropertyMapping for later modifications
         PropMapping* pm = new PropMapping(address_.get(), newComp, newMirror);
-		// Set the name and address values back to none.
+        // Set the name and address values back to none.
         address_.set("");
         name_.set("");
 
@@ -367,7 +449,7 @@ void ZmqReceiver::addSelectedProperty() {
         if (selectedType == "Bool") {
             pm->type = PropertyType::boolVal;
             addBoolProperty(newComp, newMirror);
-		} else if (selectedType == "Float") {
+        } else if (selectedType == "Float") {
             pm->type = PropertyType::floatVal;
             addFloatProperty(newComp, newMirror);
         } else if (selectedType == "Int") {
@@ -388,7 +470,10 @@ void ZmqReceiver::addSelectedProperty() {
         } else if (selectedType == "StereoCameraView") {
             pm->type = PropertyType::stereoCameraViewVal;
             addStereoCameraViewProperty(newComp, newMirror);
-		}
+        } else if (selectedType == "TransferFunction") {
+            pm->type = PropertyType::transferFunctionVal;
+            addTransferFunctionProperty(newComp, newMirror);
+        }
 
         // Add the new Property
         additionalProps.push_back(pm);
@@ -419,41 +504,50 @@ void ZmqReceiver::addFloatProperty(CompositeProperty* newComp, CompositeProperty
 }
 
 void ZmqReceiver::addIntProperty(CompositeProperty* newComp, CompositeProperty* newMirror) {
-    IntProperty* newProp = new IntProperty("value", "Value", 0, -10000, 10000); 
+    IntProperty* newProp = new IntProperty("value", "Value", 0, -10000, 10000);
     newProp->setSerializationMode(PropertySerializationMode::All);
-	IntProperty* newMirrorProp = new IntProperty("value", "Value", 0, -10000, 10000);
+    IntProperty* newMirrorProp = new IntProperty("value", "Value", 0, -10000, 10000);
     newMirrorProp->setSerializationMode(PropertySerializationMode::All);
     newComp->addProperty(newProp);
     newMirror->addProperty(newMirrorProp);
 }
 
 void ZmqReceiver::addIntVec2Property(CompositeProperty* newComp, CompositeProperty* newMirror) {
-    IntVec2Property* newProp = new IntVec2Property("value", "Value", ivec2(0), -ivec2(10000), ivec2(10000));
+    IntVec2Property* newProp =
+        new IntVec2Property("value", "Value", ivec2(0), -ivec2(10000), ivec2(10000));
     newProp->setSerializationMode(PropertySerializationMode::All);
-    IntVec2Property* newMirrorProp = new IntVec2Property("value", "Value", ivec2(0), -ivec2(10000), ivec2(10000));
+    IntVec2Property* newMirrorProp =
+        new IntVec2Property("value", "Value", ivec2(0), -ivec2(10000), ivec2(10000));
     newMirrorProp->setSerializationMode(PropertySerializationMode::All);
     newComp->addProperty(newProp);
     newMirror->addProperty(newMirrorProp);
 }
 
 void ZmqReceiver::addFloatVec3Property(CompositeProperty* newComp, CompositeProperty* newMirror) {
-    FloatVec3Property* newProp = new FloatVec3Property("value", "Value", vec3(0.0f), -vec3(10000.0f), vec3(10000.0f), vec3(0.01f));
+    FloatVec3Property* newProp = new FloatVec3Property(
+        "value", "Value", vec3(0.0f), -vec3(10000.0f), vec3(10000.0f), vec3(0.01f));
     newProp->setSerializationMode(PropertySerializationMode::All);
-    FloatVec3Property* newMirrorProp = new FloatVec3Property("value", "Value", vec3(0.0f), -vec3(10000.0f), vec3(10000.0f), vec3(0.01f));
+    FloatVec3Property* newMirrorProp = new FloatVec3Property(
+        "value", "Value", vec3(0.0f), -vec3(10000.0f), vec3(10000.0f), vec3(0.01f));
     newMirrorProp->setSerializationMode(PropertySerializationMode::All);
     newComp->addProperty(newProp);
     newMirror->addProperty(newMirrorProp);
 }
 
-void ZmqReceiver::addStereoCameraProperty(CompositeProperty* newComp, CompositeProperty* newMirror) {
+void ZmqReceiver::addStereoCameraProperty(CompositeProperty* newComp,
+                                          CompositeProperty* newMirror) {
     // Left Camera
     CompositeProperty* cameraL = new CompositeProperty("camparamsL", "Camera Parameters L");
     cameraL->setSerializationMode(PropertySerializationMode::All);
-    FloatVec3Property* newFromPropL = new FloatVec3Property( "lookFromL", "Look From L", vec3(1.0f), -vec3(1000.0f), vec3(1000.0f), vec3(0.0001f), InvalidationLevel::Valid, PropertySemantics("Spherical"));
+    FloatVec3Property* newFromPropL = new FloatVec3Property(
+        "lookFromL", "Look From L", vec3(1.0f), -vec3(1000.0f), vec3(1000.0f), vec3(0.0001f),
+        InvalidationLevel::Valid, PropertySemantics("Spherical"));
     newFromPropL->setSerializationMode(PropertySerializationMode::All);
-    FloatVec3Property* newToPropL = new FloatVec3Property("lookToL", "Look to L", vec3(0.0f), -vec3(100.0f), vec3(100.0f), vec3(0.1f));
+    FloatVec3Property* newToPropL = new FloatVec3Property("lookToL", "Look to L", vec3(0.0f),
+                                                          -vec3(100.0f), vec3(100.0f), vec3(0.1f));
     newToPropL->setSerializationMode(PropertySerializationMode::All);
-    FloatVec3Property* newUpPropL = new FloatVec3Property("lookUpL", "Look up L", vec3(0.0f, 1.0f, 0.0f), -vec3(100.0f), vec3(100.0f), vec3(0.1f));
+    FloatVec3Property* newUpPropL = new FloatVec3Property(
+        "lookUpL", "Look up L", vec3(0.0f, 1.0f, 0.0f), -vec3(100.0f), vec3(100.0f), vec3(0.1f));
     newUpPropL->setSerializationMode(PropertySerializationMode::All);
     cameraL->addProperty(newFromPropL);
     cameraL->addProperty(newToPropL);
@@ -462,11 +556,15 @@ void ZmqReceiver::addStereoCameraProperty(CompositeProperty* newComp, CompositeP
     // Left Camera Mirror
     CompositeProperty* cameraLMirror = new CompositeProperty("camparamsL", "Camera Parameters L");
     cameraLMirror->setSerializationMode(PropertySerializationMode::All);
-    FloatVec3Property* newFromPropLMirror = new FloatVec3Property( "lookFromL", "Look From L", vec3(1.0f), -vec3(1000.0f), vec3(1000.0f), vec3(0.0001f), InvalidationLevel::Valid, PropertySemantics("Spherical"));
+    FloatVec3Property* newFromPropLMirror = new FloatVec3Property(
+        "lookFromL", "Look From L", vec3(1.0f), -vec3(1000.0f), vec3(1000.0f), vec3(0.0001f),
+        InvalidationLevel::Valid, PropertySemantics("Spherical"));
     newFromPropLMirror->setSerializationMode(PropertySerializationMode::All);
-    FloatVec3Property* newToPropLMirror = new FloatVec3Property("lookToL", "Look to L", vec3(0.0f), -vec3(100.0f), vec3(100.0f), vec3(0.1f));
+    FloatVec3Property* newToPropLMirror = new FloatVec3Property(
+        "lookToL", "Look to L", vec3(0.0f), -vec3(100.0f), vec3(100.0f), vec3(0.1f));
     newToPropLMirror->setSerializationMode(PropertySerializationMode::All);
-    FloatVec3Property* newUpPropLMirror = new FloatVec3Property("lookUpL", "Look up L", vec3(0.0f, 1.0f, 0.0f), -vec3(100.0f), vec3(100.0f), vec3(0.1f));
+    FloatVec3Property* newUpPropLMirror = new FloatVec3Property(
+        "lookUpL", "Look up L", vec3(0.0f, 1.0f, 0.0f), -vec3(100.0f), vec3(100.0f), vec3(0.1f));
     newUpPropLMirror->setSerializationMode(PropertySerializationMode::All);
     cameraLMirror->addProperty(newFromPropLMirror);
     cameraLMirror->addProperty(newToPropLMirror);
@@ -476,11 +574,15 @@ void ZmqReceiver::addStereoCameraProperty(CompositeProperty* newComp, CompositeP
     // Right Camera
     CompositeProperty* cameraR = new CompositeProperty("camparamsR", "Camera Parameters R");
     cameraR->setSerializationMode(PropertySerializationMode::All);
-    FloatVec3Property* newFromPropR = new FloatVec3Property( "lookFromR", "Look From R", vec3(1.0f), -vec3(1000.0f), vec3(1000.0f), vec3(0.0001f), InvalidationLevel::Valid, PropertySemantics("Spherical"));
+    FloatVec3Property* newFromPropR = new FloatVec3Property(
+        "lookFromR", "Look From R", vec3(1.0f), -vec3(1000.0f), vec3(1000.0f), vec3(0.0001f),
+        InvalidationLevel::Valid, PropertySemantics("Spherical"));
     newFromPropR->setSerializationMode(PropertySerializationMode::All);
-    FloatVec3Property* newToPropR = new FloatVec3Property("lookToR", "Look to R", vec3(0.0f), -vec3(100.0f), vec3(100.0f), vec3(0.1f));
+    FloatVec3Property* newToPropR = new FloatVec3Property("lookToR", "Look to R", vec3(0.0f),
+                                                          -vec3(100.0f), vec3(100.0f), vec3(0.1f));
     newToPropR->setSerializationMode(PropertySerializationMode::All);
-    FloatVec3Property* newUpPropR = new FloatVec3Property("lookUpR", "Look up R", vec3(0.0f, 1.0f, 0.0f), -vec3(100.0f), vec3(100.0f), vec3(0.1f));
+    FloatVec3Property* newUpPropR = new FloatVec3Property(
+        "lookUpR", "Look up R", vec3(0.0f, 1.0f, 0.0f), -vec3(100.0f), vec3(100.0f), vec3(0.1f));
     newUpPropR->setSerializationMode(PropertySerializationMode::All);
     cameraR->addProperty(newFromPropR);
     cameraR->addProperty(newToPropR);
@@ -489,11 +591,15 @@ void ZmqReceiver::addStereoCameraProperty(CompositeProperty* newComp, CompositeP
     // Right Camera Mirror
     CompositeProperty* cameraRMirror = new CompositeProperty("camparamsR", "Camera Parameters R");
     cameraRMirror->setSerializationMode(PropertySerializationMode::All);
-    FloatVec3Property* newFromPropRMirror = new FloatVec3Property( "lookFromR", "Look From R", vec3(1.0f), -vec3(1000.0f), vec3(1000.0f), vec3(0.0001f), InvalidationLevel::Valid, PropertySemantics("Spherical"));
+    FloatVec3Property* newFromPropRMirror = new FloatVec3Property(
+        "lookFromR", "Look From R", vec3(1.0f), -vec3(1000.0f), vec3(1000.0f), vec3(0.0001f),
+        InvalidationLevel::Valid, PropertySemantics("Spherical"));
     newFromPropRMirror->setSerializationMode(PropertySerializationMode::All);
-    FloatVec3Property* newToPropRMirror = new FloatVec3Property("lookToR", "Look to R", vec3(0.0f), -vec3(100.0f), vec3(100.0f), vec3(0.1f));
+    FloatVec3Property* newToPropRMirror = new FloatVec3Property(
+        "lookToR", "Look to R", vec3(0.0f), -vec3(100.0f), vec3(100.0f), vec3(0.1f));
     newToPropRMirror->setSerializationMode(PropertySerializationMode::All);
-    FloatVec3Property* newUpPropRMirror = new FloatVec3Property("lookUpR", "Look up R", vec3(0.0f, 1.0f, 0.0f), -vec3(100.0f), vec3(100.0f), vec3(0.1f));
+    FloatVec3Property* newUpPropRMirror = new FloatVec3Property(
+        "lookUpR", "Look up R", vec3(0.0f, 1.0f, 0.0f), -vec3(100.0f), vec3(100.0f), vec3(0.1f));
     newUpPropRMirror->setSerializationMode(PropertySerializationMode::All);
     cameraRMirror->addProperty(newFromPropRMirror);
     cameraRMirror->addProperty(newToPropRMirror);
@@ -501,25 +607,29 @@ void ZmqReceiver::addStereoCameraProperty(CompositeProperty* newComp, CompositeP
     newMirror->addProperty(cameraRMirror);
 }
 
-void ZmqReceiver::addCameraProjectionProperty(CompositeProperty* newComp, CompositeProperty* newMirror)
-{
-    FloatProperty* newPropAR = new FloatProperty("AspectRatio", "Aspect Ratio", 1.0, -10000.0, 10000.0);
+void ZmqReceiver::addCameraProjectionProperty(CompositeProperty* newComp,
+                                              CompositeProperty* newMirror) {
+    FloatProperty* newPropAR =
+        new FloatProperty("AspectRatio", "Aspect Ratio", 1.0, -10000.0, 10000.0);
     newPropAR->setSerializationMode(PropertySerializationMode::All);
-    FloatProperty* newMirrorPropAR = new FloatProperty("AspectRatio", "Aspect Ratio", 1.0, -10000.0, 10000.0);
+    FloatProperty* newMirrorPropAR =
+        new FloatProperty("AspectRatio", "Aspect Ratio", 1.0, -10000.0, 10000.0);
     newMirrorPropAR->setSerializationMode(PropertySerializationMode::All);
     newComp->addProperty(newPropAR);
     newMirror->addProperty(newMirrorPropAR);
 
     FloatProperty* newPropNP = new FloatProperty("NearPlane", "Near Plane", 0.5, -10000.0, 10000.0);
     newPropNP->setSerializationMode(PropertySerializationMode::All);
-    FloatProperty* newMirrorPropNP = new FloatProperty("NearPlane", "Near Plane", 0.5, -10000.0, 10000.0);
+    FloatProperty* newMirrorPropNP =
+        new FloatProperty("NearPlane", "Near Plane", 0.5, -10000.0, 10000.0);
     newMirrorPropNP->setSerializationMode(PropertySerializationMode::All);
     newComp->addProperty(newPropNP);
     newMirror->addProperty(newMirrorPropNP);
 
     FloatProperty* newPropFP = new FloatProperty("FarPlane", "Far Plane", 10.0, -10000.0, 10000.0);
     newPropFP->setSerializationMode(PropertySerializationMode::All);
-    FloatProperty* newMirrorPropFP = new FloatProperty("FarPlane", "Far Plane", 10.0, -10000.0, 10000.0);
+    FloatProperty* newMirrorPropFP =
+        new FloatProperty("FarPlane", "Far Plane", 10.0, -10000.0, 10000.0);
     newMirrorPropFP->setSerializationMode(PropertySerializationMode::All);
     newComp->addProperty(newPropFP);
     newMirror->addProperty(newMirrorPropFP);
@@ -531,21 +641,37 @@ void ZmqReceiver::addCameraProjectionProperty(CompositeProperty* newComp, Compos
     newComp->addProperty(newPropFOV);
     newMirror->addProperty(newMirrorPropFOV);
 
-    IntVec2Property* newProp = new IntVec2Property("CanvasSize", "Canvas Size", ivec2(10), -ivec2(10000), ivec2(10000));
+    IntVec2Property* newProp =
+        new IntVec2Property("CanvasSize", "Canvas Size", ivec2(10), -ivec2(10000), ivec2(10000));
     newProp->setSerializationMode(PropertySerializationMode::All);
-    IntVec2Property* newMirrorProp = new IntVec2Property("CanvasSize", "Canvas Size", ivec2(10), -ivec2(10000), ivec2(10000));
+    IntVec2Property* newMirrorProp =
+        new IntVec2Property("CanvasSize", "Canvas Size", ivec2(10), -ivec2(10000), ivec2(10000));
     newMirrorProp->setSerializationMode(PropertySerializationMode::All);
     newComp->addProperty(newProp);
     newMirror->addProperty(newMirrorProp);
 }
 
-void ZmqReceiver::addStereoCameraViewProperty(CompositeProperty* newComp, CompositeProperty* newMirror)
-{
+void ZmqReceiver::addStereoCameraViewProperty(CompositeProperty* newComp,
+                                              CompositeProperty* newMirror) {
     this->addStereoCameraProperty(newComp, newMirror);
 }
 
+void ZmqReceiver::addTransferFunctionProperty(CompositeProperty* newComp,
+                                              CompositeProperty* newMirror) {
+    TransferFunctionProperty* transferFunction =
+        new TransferFunctionProperty("transferFunction", "Transfer Function");
+    transferFunction->setSerializationMode(PropertySerializationMode::All);
+
+    TransferFunctionProperty* transferFunctionMirror =
+        new TransferFunctionProperty("transferFunction", "Transfer Function");
+    transferFunction->setSerializationMode(PropertySerializationMode::All);
+
+    newComp->addProperty(transferFunction);
+    newMirror->addProperty(transferFunctionMirror);
+}
+
 /*
-	Serialization Methods for the Processor. Calling the serialization of all PropMappings.
+        Serialization Methods for the Processor. Calling the serialization of all PropMappings.
 */
 void ZmqReceiver::serialize(Serializer& s) const {
     s.serialize("propMapping", additionalProps, "propmapping");
