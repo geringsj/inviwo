@@ -38,6 +38,7 @@
 #include <inviwo/core/properties/compositeproperty.h>
 #include <inviwo/core/properties/buttonproperty.h>
 #include <inviwo/core/properties/stringproperty.h>
+#include <inviwo/core/properties/transferfunctionproperty.h>
 #include <zmq.hpp>
 #include <thread>
 #include "../ext/json.hpp"
@@ -46,7 +47,7 @@ using json = nlohmann::json;
 
 namespace inviwo {
 
-enum PropertyType {none, boolVal, intVal, floatVal, intVec2Val, floatVec3Val, stereoCameraVal, cameraProjectionVal, stereoCameraViewVal};
+enum PropertyType {none, boolVal, intVal, floatVal, intVec2Val, floatVec3Val, stereoCameraVal, cameraProjectionVal, stereoCameraViewVal, transferFunctionVal};
 
 class PropMapping : public Serializable {
 public:
@@ -117,6 +118,7 @@ private:
     void parseStereoCameraMessage(PropMapping*, json);
     void parseCameraProjectionMessage(PropMapping*, json);
     void parseStereoCameraViewMessage(PropMapping*, json);
+    void parseTransferFunctionMessage(PropMapping*, json);
 
     void addSelectedProperty();
     void addBoolProperty(CompositeProperty*, CompositeProperty*);
@@ -127,6 +129,7 @@ private:
     void addStereoCameraProperty(CompositeProperty*, CompositeProperty*);
     void addCameraProjectionProperty(CompositeProperty*, CompositeProperty*);
     void addStereoCameraViewProperty(CompositeProperty*, CompositeProperty*);
+    void addTransferFunctionProperty(CompositeProperty*, CompositeProperty*);
 
     std::thread thread_;
     zmq::context_t ctx_;
