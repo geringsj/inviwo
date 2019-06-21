@@ -293,8 +293,9 @@ void ZmqReceiver::parseTransferFunctionMessage(PropMapping* prop, json content) 
                                        point["rgba"]["w"]));
     }
 
-	//Update mirror
-    dynamic_cast<TransferFunctionProperty*>(prop->mirror->getPropertyByIdentifier("transferFunction", true))
+    // Update mirror
+    dynamic_cast<TransferFunctionProperty*>(
+        prop->mirror->getPropertyByIdentifier("transferFunction", true))
         ->set(tf);
 }
 
@@ -404,7 +405,8 @@ void ZmqReceiver::parseCameraProjectionMessage(PropMapping* prop, json content) 
 }
 
 void ZmqReceiver::parseBoolMessage(PropMapping* prop, json content) {
-    bool value = content["value"];
+    bool value = true;   
+	if(content["value"] != "true") value = false;
     dynamic_cast<BoolProperty*>(prop->mirror->getPropertyByIdentifier("value"))->set(value);
 }
 
