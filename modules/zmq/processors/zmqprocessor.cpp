@@ -530,10 +530,10 @@ void ZmqReceiver::addIntVec2Property(CompositeProperty* newComp, CompositeProper
 
 void ZmqReceiver::addFloatVec3Property(CompositeProperty* newComp, CompositeProperty* newMirror) {
     FloatVec3Property* newProp = new FloatVec3Property(
-        "value", "Value", vec3(0.0f), -vec3(10000.0f), vec3(10000.0f), vec3(0.01f));
+        "value", "Value", vec3(0.0f), -vec3(10000.0f), vec3(10000.0f), vec3(0.00001f));
     newProp->setSerializationMode(PropertySerializationMode::All);
     FloatVec3Property* newMirrorProp = new FloatVec3Property(
-        "value", "Value", vec3(0.0f), -vec3(10000.0f), vec3(10000.0f), vec3(0.01f));
+        "value", "Value", vec3(0.0f), -vec3(10000.0f), vec3(10000.0f), vec3(0.00001f));
     newMirrorProp->setSerializationMode(PropertySerializationMode::All);
     newComp->addProperty(newProp);
     newMirror->addProperty(newMirrorProp);
@@ -545,14 +545,14 @@ void ZmqReceiver::addStereoCameraProperty(CompositeProperty* newComp,
     CompositeProperty* cameraL = new CompositeProperty("camparamsL", "Camera Parameters L");
     cameraL->setSerializationMode(PropertySerializationMode::All);
     FloatVec3Property* newFromPropL = new FloatVec3Property(
-        "lookFromL", "Look From L", vec3(1.0f), -vec3(1000.0f), vec3(1000.0f), vec3(0.0001f),
+        "lookFromL", "Look From L", vec3(1.0f), -vec3(10000.0f), vec3(10000.0f), vec3(0.00001f),
         InvalidationLevel::Valid, PropertySemantics("Spherical"));
     newFromPropL->setSerializationMode(PropertySerializationMode::All);
     FloatVec3Property* newToPropL = new FloatVec3Property("lookToL", "Look to L", vec3(0.0f),
-                                                          -vec3(100.0f), vec3(100.0f), vec3(0.1f));
+                                                          -vec3(10000.0f), vec3(10000.0f), vec3(0.00001f));
     newToPropL->setSerializationMode(PropertySerializationMode::All);
     FloatVec3Property* newUpPropL = new FloatVec3Property(
-        "lookUpL", "Look up L", vec3(0.0f, 1.0f, 0.0f), -vec3(100.0f), vec3(100.0f), vec3(0.1f));
+        "lookUpL", "Look up L", vec3(0.0f, 1.0f, 0.0f), -vec3(1000.0f), vec3(1000.0f), vec3(0.00001f));
     newUpPropL->setSerializationMode(PropertySerializationMode::All);
     cameraL->addProperty(newFromPropL);
     cameraL->addProperty(newToPropL);
@@ -562,14 +562,14 @@ void ZmqReceiver::addStereoCameraProperty(CompositeProperty* newComp,
     CompositeProperty* cameraLMirror = new CompositeProperty("camparamsL", "Camera Parameters L");
     cameraLMirror->setSerializationMode(PropertySerializationMode::All);
     FloatVec3Property* newFromPropLMirror = new FloatVec3Property(
-        "lookFromL", "Look From L", vec3(1.0f), -vec3(1000.0f), vec3(1000.0f), vec3(0.0001f),
+        "lookFromL", "Look From L", vec3(1.0f), -vec3(10000.0f), vec3(10000.0f), vec3(0.00001f),
         InvalidationLevel::Valid, PropertySemantics("Spherical"));
     newFromPropLMirror->setSerializationMode(PropertySerializationMode::All);
     FloatVec3Property* newToPropLMirror = new FloatVec3Property(
-        "lookToL", "Look to L", vec3(0.0f), -vec3(100.0f), vec3(100.0f), vec3(0.1f));
+        "lookToL", "Look to L", vec3(0.0f), -vec3(10000.0f), vec3(10000.0f), vec3(0.00001f));
     newToPropLMirror->setSerializationMode(PropertySerializationMode::All);
     FloatVec3Property* newUpPropLMirror = new FloatVec3Property(
-        "lookUpL", "Look up L", vec3(0.0f, 1.0f, 0.0f), -vec3(100.0f), vec3(100.0f), vec3(0.1f));
+        "lookUpL", "Look up L", vec3(0.0f, 1.0f, 0.0f), -vec3(1000.0f), vec3(1000.0f), vec3(0.0001f));
     newUpPropLMirror->setSerializationMode(PropertySerializationMode::All);
     cameraLMirror->addProperty(newFromPropLMirror);
     cameraLMirror->addProperty(newToPropLMirror);
@@ -580,14 +580,14 @@ void ZmqReceiver::addStereoCameraProperty(CompositeProperty* newComp,
     CompositeProperty* cameraR = new CompositeProperty("camparamsR", "Camera Parameters R");
     cameraR->setSerializationMode(PropertySerializationMode::All);
     FloatVec3Property* newFromPropR = new FloatVec3Property(
-        "lookFromR", "Look From R", vec3(1.0f), -vec3(1000.0f), vec3(1000.0f), vec3(0.0001f),
+        "lookFromR", "Look From R", vec3(1.0f), -vec3(10000.0f), vec3(10000.0f), vec3(0.00001f),
         InvalidationLevel::Valid, PropertySemantics("Spherical"));
     newFromPropR->setSerializationMode(PropertySerializationMode::All);
     FloatVec3Property* newToPropR = new FloatVec3Property("lookToR", "Look to R", vec3(0.0f),
-                                                          -vec3(100.0f), vec3(100.0f), vec3(0.1f));
+                                                          -vec3(10000.0f), vec3(10000.0f), vec3(0.00001f));
     newToPropR->setSerializationMode(PropertySerializationMode::All);
     FloatVec3Property* newUpPropR = new FloatVec3Property(
-        "lookUpR", "Look up R", vec3(0.0f, 1.0f, 0.0f), -vec3(100.0f), vec3(100.0f), vec3(0.1f));
+        "lookUpR", "Look up R", vec3(0.0f, 1.0f, 0.0f), -vec3(1000.0f), vec3(1000.0f), vec3(0.00001f));
     newUpPropR->setSerializationMode(PropertySerializationMode::All);
     cameraR->addProperty(newFromPropR);
     cameraR->addProperty(newToPropR);
@@ -597,14 +597,14 @@ void ZmqReceiver::addStereoCameraProperty(CompositeProperty* newComp,
     CompositeProperty* cameraRMirror = new CompositeProperty("camparamsR", "Camera Parameters R");
     cameraRMirror->setSerializationMode(PropertySerializationMode::All);
     FloatVec3Property* newFromPropRMirror = new FloatVec3Property(
-        "lookFromR", "Look From R", vec3(1.0f), -vec3(1000.0f), vec3(1000.0f), vec3(0.0001f),
+        "lookFromR", "Look From R", vec3(1.0f), -vec3(10000.0f), vec3(10000.0f), vec3(0.00001f),
         InvalidationLevel::Valid, PropertySemantics("Spherical"));
     newFromPropRMirror->setSerializationMode(PropertySerializationMode::All);
     FloatVec3Property* newToPropRMirror = new FloatVec3Property(
-        "lookToR", "Look to R", vec3(0.0f), -vec3(100.0f), vec3(100.0f), vec3(0.1f));
+        "lookToR", "Look to R", vec3(0.0f), -vec3(10000.0f), vec3(10000.0f), vec3(0.00001f));
     newToPropRMirror->setSerializationMode(PropertySerializationMode::All);
     FloatVec3Property* newUpPropRMirror = new FloatVec3Property(
-        "lookUpR", "Look up R", vec3(0.0f, 1.0f, 0.0f), -vec3(100.0f), vec3(100.0f), vec3(0.1f));
+        "lookUpR", "Look up R", vec3(0.0f, 1.0f, 0.0f), -vec3(1000.0f), vec3(1000.0f), vec3(0.00001f));
     newUpPropRMirror->setSerializationMode(PropertySerializationMode::All);
     cameraRMirror->addProperty(newFromPropRMirror);
     cameraRMirror->addProperty(newToPropRMirror);
