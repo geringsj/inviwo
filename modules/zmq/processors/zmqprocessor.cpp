@@ -289,9 +289,12 @@ void ZmqReceiver::parseTransferFunctionMessage(PropMapping* prop, json content) 
 
     for (auto it = points.begin(); it != points.end(); ++it) {
         json point = it.value();
-        tf.addPoint(point["pos"], vec4(point["rgba"]["x"], point["rgba"]["y"], point["rgba"]["z"],
+        tf.add(point["pos"], vec4(point["rgba"]["x"], point["rgba"]["y"], point["rgba"]["z"],
                                        point["rgba"]["w"]));
     }
+
+	tf.setMaskMax(maskMax);
+    tf.setMaskMin(maskMin);
 
     // Update mirror
     dynamic_cast<TransferFunctionProperty*>(
