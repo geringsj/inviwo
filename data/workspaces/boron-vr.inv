@@ -947,7 +947,7 @@
                 <propMapping>
                     <propmapping>
                         <address content="StereoCameraViewRelative" />
-                        <type content="6" />
+                        <type content="8" />
                         <property type="org.inviwo.CompositeProperty" identifier="StereoCam">
                             <displayName content="StereoCam" />
                             <OwnedPropertyIdentifiers>
