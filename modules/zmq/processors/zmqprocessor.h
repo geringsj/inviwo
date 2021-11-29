@@ -54,6 +54,7 @@ public:
     PropMapping(std::string address, CompositeProperty* property,
                 CompositeProperty* mirror);
     PropMapping() : type(PropertyType::none){};
+    PropMapping(PropMapping&& other) = default;
     virtual ~PropMapping() = default;
 
     virtual void serialize(Serializer& s) const override;
@@ -101,7 +102,7 @@ private:
     StringProperty address_;
     ButtonProperty addParamButton_;
     // Additional Props
-    std::vector<PropMapping*> additionalProps;
+    std::vector<PropMapping> additionalProps;
 
     std::atomic<bool> should_run_;
     std::future<void> future_;

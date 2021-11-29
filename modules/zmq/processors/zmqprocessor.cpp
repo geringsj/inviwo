@@ -157,7 +157,7 @@ void ZmqReceiver::receiveZMQ() {
 */
 void ZmqReceiver::updateUI() {
     for (auto i = additionalProps.begin(); i != additionalProps.end(); ++i) {
-        PropMapping* pm = *i;
+        PropMapping* pm = &(*i);
         if (pm->type == PropertyType::boolVal) {
             dynamic_cast<BoolProperty*>(pm->property->getPropertyByIdentifier("value"))
                 ->set(dynamic_cast<BoolProperty*>(pm->mirror->getPropertyByIdentifier("value"))
@@ -242,7 +242,7 @@ void ZmqReceiver::updateUI() {
 */
 void ZmqReceiver::parseMessage(std::string address, json content) {
     for (auto i = additionalProps.begin(); i != additionalProps.end(); ++i) {
-        PropMapping* pm = *i;
+        PropMapping* pm = &(*i);
         if (pm->address == address) {
             switch (pm->type) {
                 case PropertyType::boolVal:
@@ -444,7 +444,7 @@ void ZmqReceiver::addSelectedProperty() {
         CompositeProperty* newComp = new CompositeProperty(name_.get(), name_.get());
         CompositeProperty* newMirror = new CompositeProperty(name_.get(), name_.get());
         // Create the PropertyMapping for later modifications
-        PropMapping* pm = new PropMapping(address_.get(), newComp, newMirror);
+        PropMapping pm(address_.get(), newComp, newMirror);
         // Set the name and address values back to none.
         address_.set("");
         name_.set("");
@@ -452,39 +452,39 @@ void ZmqReceiver::addSelectedProperty() {
         // Add type-specific props
         std::string selectedType = type_.getSelectedDisplayName();
         if (selectedType == "Bool") {
-            pm->type = PropertyType::boolVal;
+            pm.type = PropertyType::boolVal;
             addBoolProperty(newComp, newMirror);
         } else if (selectedType == "Float") {
-            pm->type = PropertyType::floatVal;
+            pm.type = PropertyType::floatVal;
             addFloatProperty(newComp, newMirror);
         } else if (selectedType == "Int") {
-            pm->type = PropertyType::intVal;
+            pm.type = PropertyType::intVal;
             addIntProperty(newComp, newMirror);
         } else if (selectedType == "IntVec2") {
-            pm->type = PropertyType::intVec2Val;
+            pm.type = PropertyType::intVec2Val;
             addIntVec2Property(newComp, newMirror);
         } else if (selectedType == "FloatVec3") {
-            pm->type = PropertyType::floatVec3Val;
+            pm.type = PropertyType::floatVec3Val;
             addFloatVec3Property(newComp, newMirror);
         } else if (selectedType == "Stereo Camera") {
-            pm->type = PropertyType::stereoCameraVal;
+            pm.type = PropertyType::stereoCameraVal;
             addStereoCameraProperty(newComp, newMirror);
         } else if (selectedType == "CameraProjection") {
-            pm->type = PropertyType::cameraProjectionVal;
+            pm.type = PropertyType::cameraProjectionVal;
             addCameraProjectionProperty(newComp, newMirror);
         } else if (selectedType == "StereoCameraView") {
-            pm->type = PropertyType::stereoCameraViewVal;
+            pm.type = PropertyType::stereoCameraViewVal;
             addStereoCameraViewProperty(newComp, newMirror);
         } else if (selectedType == "TransferFunction") {
-            pm->type = PropertyType::transferFunctionVal;
+            pm.type = PropertyType::transferFunctionVal;
             addTransferFunctionProperty(newComp, newMirror);
         }
 
         // Add the new Property
-        additionalProps.push_back(pm);
-        addProperty(pm->property.get());
-        pm->property->setSerializationMode(PropertySerializationMode::All);
-        pm->mirror->setSerializationMode(PropertySerializationMode::All);
+        addProperty(pm.property.get(), false);
+        pm.property->setSerializationMode(PropertySerializationMode::All);
+        pm.mirror->setSerializationMode(PropertySerializationMode::All);
+        additionalProps.push_back(std::move(pm));
     } else {
         LogWarn("Please Specify a Name and Adress for your new Property.")
     }
