@@ -686,5 +686,6 @@ void ZmqReceiver::serialize(Serializer& s) const {
 void ZmqReceiver::deserialize(Deserializer& d) {
     d.deserialize("propMapping", additionalProps, "propmapping");
     Processor::deserialize(d);
+    for (auto& prop : this->additionalProps) addProperty(prop.property.get(), false);
 }
 }  // namespace inviwo
