@@ -408,8 +408,7 @@ void ZmqReceiver::parseCameraProjectionMessage(PropMapping* prop, json content) 
 }
 
 void ZmqReceiver::parseBoolMessage(PropMapping* prop, json content) {
-    bool value = true;   
-	if(content["value"] != "true") value = false;
+    bool value = content["value"];
     dynamic_cast<BoolProperty*>(prop->mirror->getPropertyByIdentifier("value"))->set(value);
 }
 
@@ -429,7 +428,7 @@ void ZmqReceiver::parseIntVec2Message(PropMapping* prop, json content) {
 }
 
 void ZmqReceiver::parseFloatVec3Message(PropMapping* prop, json content) {
-    vec3 value = vec3(content["value"]["x"], content["value"]["y"], content["value"]["z"]);
+    vec3 value = vec3(content["x"], content["y"], content["z"]);
     dynamic_cast<FloatVec3Property*>(prop->mirror->getPropertyByIdentifier("value"))->set(value);
 }
 
