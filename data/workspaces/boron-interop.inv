@@ -1444,8 +1444,145 @@
                             </Properties>
                         </mirror>
                     </propmapping>
+                    <propmapping>
+                        <address content="TransferFunction" />
+                        <type content="9" />
+                        <property type="org.inviwo.CompositeProperty" identifier="TransferFunction">
+                            <displayName content="TransferFunction" />
+                            <semantics semantics="Default" />
+                            <usageMode content="1" />
+                            <visible content="1" />
+                            <readonly content="0" />
+                            <OwnedPropertyIdentifiers>
+                                <PropertyIdentifier content="transferFunction" />
+                            </OwnedPropertyIdentifiers>
+                            <Properties>
+                                <Property type="org.inviwo.TransferFunctionProperty" identifier="transferFunction">
+                                    <displayName content="Transfer Function" />
+                                    <semantics semantics="Default" />
+                                    <usageMode content="1" />
+                                    <visible content="1" />
+                                    <readonly content="0" />
+                                    <TransferFunction>
+                                        <maskMin content="0" />
+                                        <maskMax content="1" />
+                                        <type content="0" />
+                                        <Points>
+                                        <Point>
+                                            <pos content="0.027757775" />
+                                            <rgba x="0" y="0" z="0" w="0" />
+                                        </Point>
+                                        <Point>
+                                            <pos content="0.031947628" />
+                                            <rgba x="0.10818647" y="0.7882353" z="0.14219883" w="0.2857143" />
+                                        </Point>
+                                        <Point>
+                                            <pos content="0.041636664" />
+                                            <rgba x="0.03529412" y="0.03529412" z="0.03529412" w="0" />
+                                        </Point>
+                                        <Point>
+                                            <pos content="0.1078887" />
+                                            <rgba x="0.05490196" y="0.05490196" z="0.05490196" w="0" />
+                                        </Point>
+                                        <Point>
+                                            <pos content="0.12713583" />
+                                            <rgba x="0.7294118" y="0.10583658" z="0.39684138" w="0.34285715" />
+                                        </Point>
+                                        <Point>
+                                            <pos content="0.14599018" />
+                                            <rgba x="0.08627451" y="0.08627451" z="0.08627451" w="0" />
+                                        </Point>
+                                        <Point>
+                                            <pos content="0.34369886" />
+                                            <rgba x="0.11372549" y="0.11372549" z="0.11372549" w="0" />
+                                        </Point>
+                                        <Point>
+                                            <pos content="0.35811234" />
+                                            <rgba x="0.12062257" y="0.7306935" z="0.99215686" w="1" />
+                                         </Point>
+                                        </Points>
+                                    </TransferFunction>
+                                    <zoomH_ x="0" y="1" />
+                                    <zoomV_ x="0" y="1" />
+                                    <showHistogram_ content="1" />
+                                    <histogramSelection content="11111111111111111111111111111111" />
+                                </Property>
+                            </Properties>
+                            <collapsed content="0" />
+                        </property>
+                        <mirror type="org.inviwo.CompositeProperty" identifier="TransferFunction">
+                            <displayName content="TransferFunction" />
+                            <semantics semantics="Default" />
+                            <usageMode content="1" />
+                            <visible content="1" />
+                            <readonly content="0" />
+                            <OwnedPropertyIdentifiers>
+                                <PropertyIdentifier content="transferFunction" />
+                            </OwnedPropertyIdentifiers>
+                            <Properties>
+                                <Property type="org.inviwo.TransferFunctionProperty" identifier="transferFunction">
+                                    <displayName content="Transfer Function" />
+                                    <semantics semantics="Default" />
+                                    <usageMode content="1" />
+                                    <visible content="1" />
+                                    <readonly content="0" />
+                                    <TransferFunction>
+                                        <maskMin content="0" />
+                                        <maskMax content="1" />
+                                        <type content="0" />
+                                        <Points>
+                                        <Point>
+                                            <pos content="0.027757775" />
+                                            <rgba x="0" y="0" z="0" w="0" />
+                                        </Point>
+                                        <Point>
+                                            <pos content="0.031947628" />
+                                            <rgba x="0.10818647" y="0.7882353" z="0.14219883" w="0.2857143" />
+                                        </Point>
+                                        <Point>
+                                            <pos content="0.041636664" />
+                                            <rgba x="0.03529412" y="0.03529412" z="0.03529412" w="0" />
+                                        </Point>
+                                        <Point>
+                                            <pos content="0.1078887" />
+                                            <rgba x="0.05490196" y="0.05490196" z="0.05490196" w="0" />
+                                        </Point>
+                                        <Point>
+                                            <pos content="0.12713583" />
+                                            <rgba x="0.7294118" y="0.10583658" z="0.39684138" w="0.34285715" />
+                                        </Point>
+                                        <Point>
+                                            <pos content="0.14599018" />
+                                            <rgba x="0.08627451" y="0.08627451" z="0.08627451" w="0" />
+                                        </Point>
+                                        <Point>
+                                            <pos content="0.34369886" />
+                                            <rgba x="0.11372549" y="0.11372549" z="0.11372549" w="0" />
+                                        </Point>
+                                        <Point>
+                                            <pos content="0.35811234" />
+                                            <rgba x="0.12062257" y="0.7306935" z="0.99215686" w="1" />
+                                         </Point>
+                                        </Points>
+                                    </TransferFunction>
+                                    <zoomH_ x="0" y="1" />
+                                    <zoomV_ x="0" y="1" />
+                                    <showHistogram_ content="1" />
+                                    <histogramSelection content="11111111111111111111111111111111" />
+                                </Property>
+                            </Properties>
+                            <collapsed content="0" />
+                        </mirror>
+                    </propmapping>
                 </propMapping>
                 <Properties>
+                    <Property type="org.inviwo.CompositeProperty" identifier="addParam">
+                        <Properties>
+                            <Property type="org.inviwo.OptionPropertyString" identifier="property">
+                                <selectedIdentifier content="Transfer Function" />
+                            </Property>
+                        </Properties>
+                    </Property>
                     <Property type="org.inviwo.CompositeProperty" identifier="StereoCameraViewRelative">
                         <displayName content="StereoCameraViewRelative" />
                         <OwnedPropertyIdentifiers>
@@ -1698,12 +1835,75 @@
                             </Property>
                         </Properties>
                     </Property>
+                    <Property type="org.inviwo.CompositeProperty" identifier="TransferFunction">
+                        <displayName content="TransferFunction" />
+                        <semantics semantics="Default" />
+                        <usageMode content="1" />
+                        <visible content="1" />
+                        <readonly content="0" />
+                        <OwnedPropertyIdentifiers>
+                            <PropertyIdentifier content="transferFunction" />
+                        </OwnedPropertyIdentifiers>
+                        <Properties>
+                            <Property type="org.inviwo.TransferFunctionProperty" identifier="transferFunction">
+                                <displayName content="Transfer Function" />
+                                <semantics semantics="Default" />
+                                <usageMode content="1" />
+                                <visible content="1" />
+                                <readonly content="0" />
+                                <TransferFunction>
+                                    <maskMin content="0" />
+                                    <maskMax content="1" />
+                                    <type content="0" />
+                                    <Points>
+                                        <Point>
+                                            <pos content="0.027757775" />
+                                            <rgba x="0" y="0" z="0" w="0" />
+                                        </Point>
+                                        <Point>
+                                            <pos content="0.031947628" />
+                                            <rgba x="0.10818647" y="0.7882353" z="0.14219883" w="0.2857143" />
+                                        </Point>
+                                        <Point>
+                                            <pos content="0.041636664" />
+                                            <rgba x="0.03529412" y="0.03529412" z="0.03529412" w="0" />
+                                        </Point>
+                                        <Point>
+                                            <pos content="0.1078887" />
+                                            <rgba x="0.05490196" y="0.05490196" z="0.05490196" w="0" />
+                                        </Point>
+                                        <Point>
+                                            <pos content="0.12713583" />
+                                            <rgba x="0.7294118" y="0.10583658" z="0.39684138" w="0.34285715" />
+                                        </Point>
+                                        <Point>
+                                            <pos content="0.14599018" />
+                                            <rgba x="0.08627451" y="0.08627451" z="0.08627451" w="0" />
+                                        </Point>
+                                        <Point>
+                                            <pos content="0.34369886" />
+                                            <rgba x="0.11372549" y="0.11372549" z="0.11372549" w="0" />
+                                        </Point>
+                                        <Point>
+                                            <pos content="0.35811234" />
+                                            <rgba x="0.12062257" y="0.7306935" z="0.99215686" w="1" />
+                                         </Point>
+                                    </Points>
+                                </TransferFunction>
+                                <zoomH_ x="0" y="1" />
+                                <zoomV_ x="0" y="1" />
+                                <showHistogram_ content="1" />
+                                <histogramSelection content="11111111111111111111111111111111" />
+                            </Property>
+                        </Properties>
+                        <collapsed content="0" />
+                    </Property>
                 </Properties>
                 <MetaDataMap>
                     <MetaDataItem type="org.inviwo.ProcessorMetaData" key="org.inviwo.ProcessorMetaData">
                         <position x="-200" y="100" />
                         <visibility content="1" />
-                        <selection content="0" />
+                        <selection content="1" />
                     </MetaDataItem>
                 </MetaDataMap>
             </Processor>
@@ -2105,6 +2305,7 @@
             <PropertyLink src="ZmqReceiver.CameraProjection.NearPlane" dst="VolumeRaycaster.camera.near" />
             <PropertyLink src="MeshClipping.planeNormal" dst="ZmqReceiver.CuttingPlaneNormal.value" />
             <PropertyLink src="VolumeRaycaster.camera.fov" dst="ZmqReceiver.CameraProjection.FOV" />
+            <PropertyLink src="ZmqReceiver.TransferFunction.transferFunction" dst="VolumeRaycaster.isotfComposite.transferFunction" />
             <PropertyLink src="MeshClipping2.planePoint" dst="ZmqReceiver.CuttingPlanePoint.value" />
             <PropertyLink src="VolumeRaycaster2.camera.near" dst="ZmqReceiver.CameraProjection.NearPlane" />
             <PropertyLink src="ZmqReceiver.CuttingPlaneState.value" dst="MeshClipping.clippingEnabled" />
@@ -2160,6 +2361,7 @@
             <PropertyLink src="VolumeRaycaster2.camera.lookUp" dst="ZmqReceiver.StereoCameraViewRelative.camparamsR.lookUpR" />
             <PropertyLink src="ZmqReceiver.CameraProjection.FOV" dst="VolumeRaycaster2.camera.fov" />
             <PropertyLink src="ZmqReceiver.CuttingPlaneNormal.value" dst="MeshClipping2.planeNormal" />
+            <PropertyLink src="ZmqReceiver.TransferFunction.transferFunction" dst="VolumeRaycaster2.isotfComposite.transferFunction" />
             <PropertyLink src="MeshClipping.clippingEnabled" dst="ZmqReceiver.CuttingPlaneState.value" />
         </PropertyLinks>
     </ProcessorNetwork>
