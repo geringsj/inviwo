@@ -74,6 +74,8 @@ public:
     bool getUseCustomDimensions() const;
     ivec2 getCustomDimensions() const;
 
+    virtual void deserialize(Deserializer& d) override;
+
 public:
     ImageInport inport_;
     IntVec2Property dimensions_;
@@ -86,7 +88,9 @@ private:
     void sizeChanged();
     void nameChanged();
 
-	SpoutSender sender_;
+    void init_sender();
+
+    SpoutSender sender_;
     ivec2 previousImageSize_;
 };
 

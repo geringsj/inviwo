@@ -80,10 +80,27 @@ Spout::Spout()
 
     inport_.onConnect([&]() { sizeChanged(); });
 
+    init_sender();
+
     setAllPropertiesCurrentStateAsDefault();
 }
 
-Spout::~Spout() = default;
+void Spout::init_sender() {
+    sender_.SetCPUmode(false);
+    sender_.SetMemoryShareMode(false);
+    sender_.SetDX9(false);
+    // DXGI_FORMAT_R8G8B8A8_UNORM; // default DX11 format - compatible with DX9 (28)
+    unsigned int format = 28;
+    sender_.CreateSender(senderName_.get().c_str(), dimensions_.get().x, dimensions_.get().y,
+                         format);
+}
+
+void Spout::deserialize(Deserializer& d) {
+    Processor::deserialize(d);
+    init_sender();
+}
+
+Spout::~Spout() { sender_.ReleaseSender(); }
 
 ivec2 Spout::getCanvasSize() const { return dimensions_; }
 bool Spout::getUseCustomDimensions() const { return enableCustomInputDimensions_; }
@@ -105,20 +122,14 @@ void Spout::sizeChanged() {
         previousImageSize_ = dimensions_;
     }
 
-    if (inport_.hasData()) {
-        sender_.ReleaseSender();
-        sender_.CreateSender(senderName_.get().c_str(), dimensions_.get().x, dimensions_.get().y);
-    } else {
-        sender_.ReleaseSender();
-    }
+    sender_.UpdateSender(senderName_.get().c_str(), dimensions_.get().x, dimensions_.get().y);
 
     inputSize_.invalidate(InvalidationLevel::Valid, &customInputDimensions_);
     inport_.propagateEvent(&resizeEvent);
 }
 
 void Spout::nameChanged() {
-	sender_.ReleaseSender();
-    sender_.CreateSender(senderName_.get().c_str(), dimensions_.get().x, dimensions_.get().y);
+    sender_.UpdateSender(senderName_.get().c_str(), dimensions_.get().x, dimensions_.get().y);
 }
 
 void Spout::process() {
